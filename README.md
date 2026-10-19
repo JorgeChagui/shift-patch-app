@@ -2,17 +2,18 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-First, run the development server:
+Prerequisites: Node 24 (`.nvmrc`) and Docker. The local database is the Supabase CLI stack (Postgres, Storage, Studio) running in Docker.
 
 ```bash
+npm install
+npm run db:start     # local Supabase: DB on 127.0.0.1:34322, Studio on http://127.0.0.1:34323
+cp .env.example .env # then fill the local values (see the "Local development" block)
+npm run db:migrate   # apply prisma/migrations
+npm run db:seed      # load the spec sample data (idempotent)
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
+
+Ports are 3432x instead of Supabase's default 5432x, because Windows/WSL (Hyper-V) often reserves the 54xxx range. `npm run db:status` prints the local keys; `npm run db:reset` wipes and reseeds; `npm run db:stop` stops the stack. API tests (`npm run test:api`) use a separate `shiftpatch_test` database in the same container (`TEST_DATABASE_URL`), created and migrated automatically.
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
