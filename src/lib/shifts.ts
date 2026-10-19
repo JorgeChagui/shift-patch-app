@@ -44,3 +44,10 @@ export async function nextShiftId(client: DbClient): Promise<string> {
   >`SELECT nextval('shift_id_seq') AS n`;
   return `shift-${n}`;
 }
+
+/** Spec ordering for shift lists: by date, then start time. */
+export const shiftOrder = [
+  { date: "asc" },
+  { startTime: "asc" },
+  { id: "asc" },
+] satisfies Prisma.ShiftOrderByWithRelationInput[];
