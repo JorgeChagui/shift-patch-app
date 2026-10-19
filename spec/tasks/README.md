@@ -14,8 +14,8 @@ This is the development spec. It turns `spec/raw-requirements.md` (scope) and `s
 | Phase | File | Status | Notes |
 |---|---|---|---|
 | 1. DB & Seed Data | [phase-1-db-seed.md](phase-1-db-seed.md) | done | Includes minimal CI (type-check + lint) |
-| 2. API Routes | [phase-2-api.md](phase-2-api.md) | in progress | Required routes + supporting APIs (auth, credentials, audit, timesheets, SSE) |
-| 3. Frontend & Test IDs | [phase-3-frontend.md](phase-3-frontend.md) | not started | All 15 required `data-testid`s |
+| 2. API Routes | [phase-2-api.md](phase-2-api.md) | done | Required routes + supporting APIs (auth, credentials, audit, timesheets, SSE, notifications) |
+| 3. Frontend & Test IDs | [phase-3-frontend.md](phase-3-frontend.md) | in progress | All 15 required `data-testid`s |
 | 4. Testing & CI/CD | [phase-4-testing-ci.md](phase-4-testing-ci.md) | not started | E2E, full CI, Vercel deploy, README |
 
 Status values: `not started`, `in progress`, `done`.
@@ -32,7 +32,7 @@ Status values: `not started`, `in progress`, `done`.
 These fill gaps in the technical spec. Change them here before changing behaviour.
 
 1. **Shift IDs.** New shifts get `shift-<n>`, continuing after the seed (the spec's example returns `shift-7`). Generate the number from a DB sequence, not `count()`, so it stays safe under concurrency.
-2. **Lapsed credentials.** A nurse can't claim a shift if they have no license credential, or if their latest license `expiresAt` is before the shift date (a license expiring on the shift date is still valid). `nurse-2` (expired 2026-06-01) is blocked for every seeded shift, with `403 { "error": "Credential expired, cannot claim shift" }`.
+2. **Lapsed credentials.** A nurse can't claim a shift if they have no license credential, or if their latest license (the most recently uploaded; ties broken by the later `expiresAt`) has an `expiresAt` before the shift date (a license expiring on the shift date is still valid). A newer upload replaces an older one even if it expires sooner. `nurse-2` (expired 2026-06-01) is blocked for every seeded shift, with `403 { "error": "Credential expired, cannot claim shift" }`.
 3. **`GET /api/shifts`** requires an authenticated user (any role).
 4. **Who can cancel.** The owning agency, an admin, or the nurse who claimed the shift. Nurses may only use `reason: "advance"`. Cancelling a shift that isn't `filled` returns 409.
 5. **Statuses.** `open`, `filled`, `cancelled`. `POST /api/shifts/:id/cancel` reopens the shift (`open`, `claimedBy: null`) as the spec says. `cancelled` is reserved for an agency withdrawing a shift entirely (extra route, `POST /api/shifts/:id/withdraw`), so the admin badge can show all three.
@@ -52,5 +52,5 @@ These fill gaps in the technical spec. Change them here before changing behaviou
 | Shift lifecycle (post, browse, claim, cancel/no-show) | P2-04 to P2-08, P3-04, P3-06, P4-02 |
 | Admin dashboard, reporting, timesheets, audit log | P1-05, P2-10 to P2-12, P3-07, P3-08 |
 | Real-time dashboard | P2-12, P3-07 |
-| In-app notifications (email substitute) | P2-06, P2-07, P3-03 |
+| In-app notifications (email substitute) | P2-06, P2-07, P2-14, P3-03 |
 | Deployment with sample data, green CI, exact contracts and test IDs | P1-04, P1-06, P3-09, P4-03 to P4-06 |
