@@ -4,6 +4,13 @@ Nursing shift marketplace built for a technical assessment. Agencies post open s
 
 **Source of truth:** `spec/ShiftPatch-Technical-Spec.md` (API contracts, sample data, required `data-testid`s) and `spec/raw-requirements.md` (scope). Routes, response shapes, seed data and test IDs must match the spec **exactly**. Update the spec before changing behaviour.
 
+## Project status
+
+Work is split into 4 phases in `spec/tasks/` (the development spec, derived from `spec/`). `spec/tasks/README.md` holds the status board and the cross-phase decisions that fill gaps in the spec; read it first.
+
+- Current phase: **Phase 1 — DB & Seed Data** (`spec/tasks/phase-1-db-seed.md`)
+- Plan each phase from its task file. Tick tasks (`- [x]`) as they land, and update the status board and this "Current phase" line in the same commit.
+
 ## Stack and decisions
 
 - Next.js 16 (App Router, TypeScript), Tailwind CSS v4, shadcn/ui
@@ -30,7 +37,7 @@ npm run test:e2e     # playwright test (tests/e2e)
 - `src/app` routes (route groups `(nurse)`, `(agency)`, `(admin)`), `src/app/api` route handlers
 - `src/lib` db client, auth, validation, shared helpers
 - `tests/api`, `tests/e2e`
-- `spec/` requirements, `.claude/skills/` project skills
+- `spec/` requirements, `spec/tasks/` phased development tasks, `.claude/skills/` project skills
 
 ## Rules
 
