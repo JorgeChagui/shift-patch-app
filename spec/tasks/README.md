@@ -13,7 +13,7 @@ This is the development spec. It turns `spec/raw-requirements.md` (scope) and `s
 
 | Phase | File | Status | Notes |
 |---|---|---|---|
-| 1. DB & Seed Data | [phase-1-db-seed.md](phase-1-db-seed.md) | not started | Includes minimal CI (type-check + lint) |
+| 1. DB & Seed Data | [phase-1-db-seed.md](phase-1-db-seed.md) | in progress | Includes minimal CI (type-check + lint) |
 | 2. API Routes | [phase-2-api.md](phase-2-api.md) | not started | Required routes + supporting APIs (auth, credentials, audit, timesheets, SSE) |
 | 3. Frontend & Test IDs | [phase-3-frontend.md](phase-3-frontend.md) | not started | All 15 required `data-testid`s |
 | 4. Testing & CI/CD | [phase-4-testing-ci.md](phase-4-testing-ci.md) | not started | E2E, full CI, Vercel deploy, README |

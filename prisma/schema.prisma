@@ -1,0 +1,170 @@
+// ShiftPatch schema. IDs are strings so seeded IDs match spec/ShiftPatch-Technical-Spec.md exactly.
+// Dates and times are facility-local strings: date "YYYY-MM-DD", times "HH:mm".
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  nurse
+  agency
+  admin
+}
+
+enum ShiftStatus {
+  open
+  filled
+  cancelled
+}
+
+enum CredentialType {
+  license
+  tbTest  @map("tb-test")
+}
+
+enum CancellationReason {
+  noShow  @map("no-show")
+  advance
+}
+
+enum TimesheetStatus {
+  pending
+  approved
+}
+
+enum NotificationKind {
+  success
+  error
+  info
+}
+
+model Agency {
+  id     String  @id
+  name   String
+  users  User[]
+  shifts Shift[]
+
+  @@map("agencies")
+}
+
+model User {
+  id           String  @id @default(cuid())
+  name         String
+  email        String  @unique
+  passwordHash String  @map("password_hash")
+  role         Role
+  agencyId     String? @map("agency_id")
+  agency       Agency? @relation(fields: [agencyId], references: [id])
+
+  claimedShifts        Shift[]             @relation("ShiftClaimedBy")
+  credentials          Credential[]
+  cancellationsAsNurse ShiftCancellation[] @relation("CancellationPreviousNurse")
+  cancellationsAsActor ShiftCancellation[] @relation("CancellationCancelledBy")
+  auditLogs            AuditLog[]
+  timesheets           Timesheet[]         @relation("TimesheetNurse")
+  approvedTimesheets   Timesheet[]         @relation("TimesheetApprovedBy")
+  notifications        Notification[]
+
+  @@index([agencyId])
+  @@map("users")
+}
+
+model Shift {
+  // "shift-<n>" from the shift_id_seq sequence (see nextShiftId in src/lib/shifts.ts)
+  id          String      @id
+  agencyId    String      @map("agency_id")
+  agency      Agency      @relation(fields: [agencyId], references: [id])
+  role        String
+  date        String
+  startTime   String      @map("start_time")
+  endTime     String      @map("end_time")
+  status      ShiftStatus @default(open)
+  claimedById String?     @map("claimed_by_id")
+  claimedBy   User?       @relation("ShiftClaimedBy", fields: [claimedById], references: [id])
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+
+  cancellations ShiftCancellation[]
+  timesheet     Timesheet?
+
+  @@index([agencyId])
+  @@index([claimedById])
+  @@map("shifts")
+}
+
+model Credential {
+  id         String         @id @default(cuid())
+  nurseId    String         @map("nurse_id")
+  nurse      User           @relation(fields: [nurseId], references: [id], onDelete: Cascade)
+  type       CredentialType @default(license)
+  fileKey    String?        @map("file_key")
+  fileName   String?        @map("file_name")
+  expiresAt  String         @map("expires_at")
+  uploadedAt DateTime       @default(now()) @map("uploaded_at")
+
+  @@index([nurseId, type])
+  @@map("credentials")
+}
+
+model ShiftCancellation {
+  id              String             @id @default(cuid())
+  shiftId         String             @map("shift_id")
+  shift           Shift              @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+  reason          CancellationReason
+  previousNurseId String             @map("previous_nurse_id")
+  previousNurse   User               @relation("CancellationPreviousNurse", fields: [previousNurseId], references: [id])
+  cancelledById   String             @map("cancelled_by_id")
+  cancelledBy     User               @relation("CancellationCancelledBy", fields: [cancelledById], references: [id])
+  createdAt       DateTime           @default(now()) @map("created_at")
+
+  @@index([shiftId])
+  @@map("shift_cancellations")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?  @map("actor_id")
+  actor      User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  action     String
+  entityType String   @map("entity_type")
+  entityId   String   @map("entity_id")
+  metadata   Json     @default("{}")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model Timesheet {
+  id           String          @id @default(cuid())
+  shiftId      String          @unique @map("shift_id")
+  shift        Shift           @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+  nurseId      String          @map("nurse_id")
+  nurse        User            @relation("TimesheetNurse", fields: [nurseId], references: [id])
+  hours        Float
+  status       TimesheetStatus @default(pending)
+  approvedById String?         @map("approved_by_id")
+  approvedBy   User?           @relation("TimesheetApprovedBy", fields: [approvedById], references: [id])
+  approvedAt   DateTime?       @map("approved_at")
+
+  @@index([nurseId])
+  @@map("timesheets")
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String           @map("user_id")
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  message   String
+  kind      NotificationKind @default(info)
+  readAt    DateTime?        @map("read_at")
+  createdAt DateTime         @default(now()) @map("created_at")
+
+  @@index([userId, readAt])
+  @@map("notifications")
+}

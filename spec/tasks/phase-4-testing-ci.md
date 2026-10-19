@@ -36,13 +36,13 @@
 - [ ] **P4-04 Vercel deployment**
   - **Goal:** a public URL with the sample data.
   - **Files:** `vercel.json` (only if needed), `package.json` build script
-  - **Acceptance criteria:** env vars set in Vercel (`DATABASE_URL`, `DIRECT_URL`, `JWT_SECRET`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`); migrations applied and seed loaded on the production DB; private Storage bucket exists; preview deploys don't touch production data.
+  - **Acceptance criteria:** env vars set in Vercel (`DATABASE_URL`, `DIRECT_URL`, `JWT_SECRET`, `SUPABASE_URL`, `SUPABASE_SECRET_KEY`); migrations applied and seed loaded on the production DB; private Storage bucket exists; preview deploys don't touch production data.
   - **Verify:** `curl` the live URL with each spec example (login, list, post, claim, cancel, agency scoping) and compare with the spec; walk each role's UI flow.
 
 - [ ] **P4-05 Secrets audit**
   - **Goal:** no secrets in git history.
   - **Files:** `.gitignore`, optionally `.github/workflows/ci.yml` (gitleaks step)
-  - **Acceptance criteria:** gitleaks (or equivalent) over full history finds nothing; only `.env.example` is tracked; no service-role key reaches client bundles.
+  - **Acceptance criteria:** gitleaks (or equivalent) over full history finds nothing; only `.env.example` is tracked; no Supabase secret key reaches client bundles.
   - **Verify:** run gitleaks locally; `grep` the `.next` client output for the key name.
 
 - [ ] **P4-06 README**

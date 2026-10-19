@@ -78,7 +78,7 @@
   - **Goal:** nurses upload license / TB test documents with an expiry date.
   - **Files:** `src/app/api/credentials/route.ts`, `src/lib/storage.ts`
   - **Acceptance criteria:**
-    - `POST` (nurse only), multipart: `file` (PDF/JPEG/PNG, size limit e.g. 5 MB), `expiresAt` (`YYYY-MM-DD`), `type` (`license` | `tb-test`, default `license`). File goes to a private Supabase Storage bucket via the service-role key on the server only. 201 with the credential. Audited.
+    - `POST` (nurse only), multipart: `file` (PDF/JPEG/PNG, size limit e.g. 5 MB), `expiresAt` (`YYYY-MM-DD`), `type` (`license` | `tb-test`, default `license`). File goes to a private Supabase Storage bucket via the Supabase secret key (`SUPABASE_SECRET_KEY`) on the server only. 201 with the credential. Audited.
     - `GET`: a nurse sees their own credentials with computed `status` (`valid` / `expired`); an admin sees everyone's, with short-lived signed URLs.
     - Storage calls are behind `src/lib/storage.ts` so tests can mock them.
   - **Verify:** API tests with storage mocked: upload, bad file type → 400, agency → 403. After uploading a future-dated license, James can claim.

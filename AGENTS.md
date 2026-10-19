@@ -14,11 +14,13 @@ Work is split into 4 phases in `spec/tasks/` (the development spec, derived from
 ## Stack and decisions
 
 - Next.js 16 (App Router, TypeScript), Tailwind CSS v4, shadcn/ui
-- Prisma + Supabase PostgreSQL (pooled URL on port 6543 at runtime, `DIRECT_URL` on 5432 for migrations)
+- Prisma 7 (`prisma.config.ts`, `@prisma/adapter-pg`, client generated to `src/generated/prisma`) + Supabase PostgreSQL (pooled URL on port 6543 at runtime, `DIRECT_URL` on 5432 for migrations)
+- Local dev DB: Supabase CLI stack in Docker (`npm run db:start`), on ports 3432x (Windows/Hyper-V reserves 54xxx). Tests use a separate `shiftpatch_test` DB in the same container (`TEST_DATABASE_URL`, localhost only).
+- Shift IDs come from the `shift_id_seq` sequence via `nextShiftId()` in `src/lib/shifts.ts`. Hyphenated enum values (`no-show`, `tb-test`) are Prisma `noShow`/`tbTest`; convert with `src/lib/enums.ts`.
 - Auth: custom, `bcryptjs` + `jose` JWT. `Authorization: Bearer <token>` for the API, httpOnly cookie for the UI. One `getSession()` helper shared by route handlers and `proxy.ts` (Next 16 renamed `middleware.ts`).
 - Validation: `zod` on every request body and param
 - Real-time admin dashboard: SSE from a route handler, with client polling as the fallback. Don't rely on an in-memory emitter (serverless); read changes from the DB.
-- Credential files: Supabase Storage (private bucket, server-side service-role key, signed URLs)
+- Credential files: Supabase Storage (private bucket, server-side secret key `SUPABASE_SECRET_KEY`, signed URLs)
 - Tests: Vitest (API) and Playwright (E2E). CI via GitHub Actions, deploy on Vercel.
 
 ## Commands
@@ -30,13 +32,20 @@ npm run type-check   # next typegen + tsc --noEmit
 npm run lint         # eslint .
 npm run test:api     # vitest run (tests/api)
 npm run test:e2e     # playwright test (tests/e2e)
+
+npm run db:start     # start local Supabase (Docker); db:stop / db:status
+npm run db:migrate   # prisma migrate dev (create/apply migrations locally)
+npm run db:seed      # load spec sample data (idempotent: truncates first)
+npm run db:reset     # drop, re-migrate and reseed the local DB
+npm run db:deploy:prod / db:seed:prod   # against .env.production.local (confirm first)
 ```
 
 ## Layout
 
 - `src/app` routes (route groups `(nurse)`, `(agency)`, `(admin)`), `src/app/api` route handlers
 - `src/lib` db client, auth, validation, shared helpers
-- `tests/api`, `tests/e2e`
+- `prisma/` schema, migrations, seed (`seed-data.ts` holds the spec sample data); `supabase/config.toml` local stack; `scripts/` dev scripts
+- `tests/api`, `tests/e2e` (`tests/global-setup.ts` migrates + seeds the test DB)
 - `spec/` requirements, `spec/tasks/` phased development tasks, `.claude/skills/` project skills
 
 ## Rules
