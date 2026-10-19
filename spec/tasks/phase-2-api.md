@@ -8,7 +8,7 @@
 
 ---
 
-- [ ] **P2-01 Auth core and HTTP helpers**
+- [x] **P2-01 Auth core and HTTP helpers**
   - **Goal:** one session mechanism for API clients (Bearer token) and the UI (httpOnly cookie).
   - **Files:** `src/lib/auth.ts`, `src/lib/http.ts`
   - **Acceptance criteria:**
@@ -18,7 +18,7 @@
     - `jsonError(status, message)` and a `parseBody(schema, request)` helper that returns a 400 with the first zod issue.
   - **Verify:** unit tests: valid, expired and tampered tokens; header beats cookie.
 
-- [ ] **P2-02 `POST /api/auth/login` (+ logout, me)**
+- [x] **P2-02 `POST /api/auth/login` (+ logout, me)**
   - **Goal:** the spec's login contract.
   - **Files:** `src/app/api/auth/login/route.ts`, `src/app/api/auth/logout/route.ts`, `src/app/api/auth/me/route.ts`
   - **Acceptance criteria:**
@@ -28,19 +28,19 @@
     - `logout` clears the cookie. `me` returns the current `user` or 401.
   - **Verify:** API tests for each role, a wrong password and an unknown email.
 
-- [ ] **P2-03 `proxy.ts` route protection**
+- [x] **P2-03 `proxy.ts` route protection**
   - **Goal:** UI routes are gated by role before rendering.
   - **Files:** `src/proxy.ts` (or root `proxy.ts`, per the Next 16 docs)
   - **Acceptance criteria:** no session → redirect to `/login`. `/shifts` and `/credentials` → nurse; `/agency/*` → agency; `/admin/*` → admin. Wrong role → redirect to that role's home. `/api/*` is not redirected (handlers return JSON errors themselves).
   - **Verify:** API/integration test or manual check with each role's cookie.
 
-- [ ] **P2-04 `GET /api/shifts`**
+- [x] **P2-04 `GET /api/shifts`**
   - **Goal:** the marketplace list across all agencies.
   - **Files:** `src/app/api/shifts/route.ts`
   - **Acceptance criteria:** any authenticated role (decision 3); 200 `{ "shifts": [...] }` in `toShiftDto` shape, ordered by date then startTime; no token → 401.
   - **Verify:** API test comparing the seeded response with the spec.
 
-- [ ] **P2-05 `POST /api/shifts`**
+- [x] **P2-05 `POST /api/shifts`**
   - **Goal:** agency posts an open shift.
   - **Files:** `src/app/api/shifts/route.ts`, `src/lib/validation.ts`
   - **Acceptance criteria:**
@@ -49,7 +49,7 @@
     - 201 with the new shift (`status: "open"`, `claimedBy: null`, id `shift-<n>`). Audited (`shift.created`).
   - **Verify:** API test with the spec's example body; validation 400s; nurse token → 403.
 
-- [ ] **P2-06 `POST /api/shifts/:id/claim`**
+- [x] **P2-06 `POST /api/shifts/:id/claim`**
   - **Goal:** nurse claims an open shift, blocked when credentials have lapsed.
   - **Files:** `src/app/api/shifts/[id]/claim/route.ts`, `src/lib/credentials.ts`
   - **Acceptance criteria:**
@@ -59,7 +59,7 @@
     - 200 with the updated shift. In one transaction: shift → `filled`, timesheet created, notification to the nurse, audit `shift.claimed`.
   - **Verify:** API tests: Maria claims `shift-1` → 200 matching spec JSON; James → 403 exact message; claiming `shift-2` → 409.
 
-- [ ] **P2-07 `POST /api/shifts/:id/cancel`**
+- [x] **P2-07 `POST /api/shifts/:id/cancel`**
   - **Goal:** cancellation and no-show handling that reopens the shift.
   - **Files:** `src/app/api/shifts/[id]/cancel/route.ts`
   - **Acceptance criteria:**
@@ -68,13 +68,13 @@
     - Same transaction: `ShiftCancellation` row, timesheet voided, notification to the previous nurse, audit `shift.cancelled` with the reason.
   - **Verify:** API test reproduces the spec example on `shift-2`; nurse sending `no-show` → 403; other agency → 403.
 
-- [ ] **P2-08 `GET /api/agencies/:agencyId/shifts`**
+- [x] **P2-08 `GET /api/agencies/:agencyId/shifts`**
   - **Goal:** an agency's own shifts.
   - **Files:** `src/app/api/agencies/[agencyId]/shifts/route.ts`
   - **Acceptance criteria:** 200 `{ "agencyId", "shifts": [...] }` in full shift shape. Own agency or admin only; another agency → 403 (decision 6). Unknown agency → 404.
   - **Verify:** API tests: agency-a gets `shift-1` and `shift-2`; agency-b gets `shift-3` only; agency-a asking for agency-b → 403.
 
-- [ ] **P2-09 Credentials API**
+- [x] **P2-09 Credentials API**
   - **Goal:** nurses upload license / TB test documents with an expiry date.
   - **Files:** `src/app/api/credentials/route.ts`, `src/lib/storage.ts`
   - **Acceptance criteria:**
@@ -83,19 +83,19 @@
     - Storage calls are behind `src/lib/storage.ts` so tests can mock them.
   - **Verify:** API tests with storage mocked: upload, bad file type → 400, agency → 403. After uploading a future-dated license, James can claim.
 
-- [ ] **P2-10 Audit log API**
+- [x] **P2-10 Audit log API**
   - **Goal:** admins can read the audit trail.
   - **Files:** `src/app/api/audit-log/route.ts`
   - **Acceptance criteria:** admin only; newest first; includes actor name; `limit` and `cursor` query params validated with zod.
   - **Verify:** API test: after a claim, the latest entry is `shift.claimed` by `nurse-1`.
 
-- [ ] **P2-11 Timesheets API**
+- [x] **P2-11 Timesheets API**
   - **Goal:** basic timesheet tracking.
   - **Files:** `src/app/api/timesheets/route.ts`, `src/app/api/timesheets/[id]/approve/route.ts`
   - **Acceptance criteria:** `GET` scoped by role (nurse: own; agency: shifts of their agency; admin: all) with shift details, nurse name, hours, status. `POST .../approve` for the owning agency or an admin; already approved → 409; audited.
   - **Verify:** API tests for scoping and approval.
 
-- [ ] **P2-12 Admin dashboard data and real-time stream**
+- [x] **P2-12 Admin dashboard data and real-time stream**
   - **Goal:** shift reporting and live updates without an in-memory emitter.
   - **Files:** `src/app/api/admin/shifts/route.ts`, `src/app/api/admin/stream/route.ts`, `src/app/api/shifts/[id]/withdraw/route.ts`
   - **Acceptance criteria:**
@@ -104,11 +104,17 @@
     - `POST /api/shifts/:id/withdraw` (owning agency or admin): open shift → `cancelled` (decision 5); audited.
   - **Verify:** API tests for the summary and withdraw; manual `curl -N` on the stream while claiming a shift.
 
-- [ ] **P2-13 API test suite pass**
+- [x] **P2-13 API test suite pass**
   - **Goal:** the spec's examples, reproduced as tests.
   - **Files:** `tests/api/*.test.ts`, `tests/api/helpers.ts` (login helper, DB reset in `beforeEach`)
   - **Acceptance criteria:** every response example in the technical spec has a test asserting the same body (except `token` and newly generated IDs); every mutating route has a test checking its audit row; every route has a 401 test.
   - **Verify:** `npm run test:api`.
+
+- [x] **P2-14 Notifications API**
+  - **Goal:** let the UI show stored notifications (decision 8), including the cancellation notice the previous nurse receives.
+  - **Files:** `src/app/api/notifications/route.ts`, `src/app/api/notifications/[id]/read/route.ts`
+  - **Acceptance criteria:** `GET` (any role) returns the caller's own notifications, unread first then newest first. `POST .../read` marks one of the caller's own notifications read (idempotent, audited once); someone else's → 404.
+  - **Verify:** API tests: after a no-show on `shift-2`, Maria sees the notice; James can't mark it read.
 
 ## Definition of done
 
@@ -118,3 +124,13 @@
 ## Notes
 
 _Record decisions made during this phase here._
+
+- **No past-date rules.** The seeded and example shifts (2026-10-02 to 05) predate the build date, and the spec examples claim and post them, so neither `POST /api/shifts` nor claim rejects past dates.
+- **Status-code order.** Claim: 404 → credential 403 → 409. Cancel / withdraw / approve: 404 → ownership 403 → 409. Agency shifts: another agency → 403 before the existence check, so only admins can see a 404 there.
+- **Blocked claims are audited** as `shift.claim_blocked` (outside any transaction, so it is kept even though nothing else changes).
+- **Cancel deletes the timesheet** rather than voiding it (it is unique per shift), so the shift can be claimed again with a fresh timesheet.
+- **Auth.** JWT lifetime 8 h; cookie `shiftpatch_session` (httpOnly, `SameSite=Lax`, `Secure` in production). Unknown emails are compared against a dummy bcrypt hash so both 401s take about as long.
+- **SSE.** `GET /api/admin/stream` polls the DB every 3 s (latest audit `createdAt`, latest shift `updatedAt`, shift count), sends `event: shifts-changed` or a `: ping` heartbeat, and closes itself after 55 s (`maxDuration = 60`); `retry: 3000` makes EventSource reconnect. Every audited action (including logins) triggers a refresh, which is harmless.
+- **`cacheComponents` is on** (`next.config.ts`), so route segment config `export const dynamic` is not allowed; handlers that read the request are dynamic anyway.
+- **Error messages.** 401 `Unauthorized`, 403 `Forbidden` (or the spec's credential message / `Nurses can only cancel in advance`), 404 `<Thing> not found`, 409 `Shift is not open` / `Shift is not filled` / `Only open shifts can be withdrawn` / `Timesheet is already approved`, 400 `<field>: <zod message>`.
+- **Tests** call route handlers directly with a `Request` (no server). `tests/api/helpers.ts` reseeds in `beforeEach`; storage is mocked with `vi.mock("@/lib/storage")`. `POST /api/shifts` returns `shift-4` against the 3-shift seed (the spec's `shift-7` is illustrative).
