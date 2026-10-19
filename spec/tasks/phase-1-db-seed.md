@@ -31,7 +31,7 @@
     - Enum values that contain `-` (`no-show`, `tb-test`) are mapped so the API emits the exact spec strings.
   - **Verify:** `npx prisma validate`; `npx prisma format` leaves no diff.
 
-- [ ] **P1-03 First migration**
+- [x] **P1-03 First migration**
   - **Goal:** schema applied to Supabase through a committed migration.
   - **Files:** `prisma/migrations/**`, `package.json` scripts (`db:migrate`, `db:generate`)
   - **Acceptance criteria:** `prisma migrate deploy` runs cleanly on an empty database; the generated client is created on `postinstall` or `build` so Vercel and CI have it.
@@ -89,3 +89,5 @@
 - **Enums.** `no-show`/`tb-test` are stored as those strings via `@map`; the client exposes `noShow`/`tbTest`, converted by `src/lib/enums.ts`.
 - **Seed.** Truncates every table, then inserts, in one transaction (idempotent). Agency login users are `agency-a-admin` / `agency-b-admin`, named after their agency. `shift_id_seq` is set to 3, so the next shift is `shift-4`.
 - **Supabase keys.** The new secret key (`SUPABASE_SECRET_KEY`, `sb_secret_...`) replaces the legacy service-role key. No publishable key: the browser never talks to Supabase directly.
+- **Production connections.** `DIRECT_URL` uses the Supabase **session pooler** (pooler host, port 5432) because the direct host is IPv6-only. Production scripts `db:deploy:prod` / `db:seed:prod` read `.env.production.local` via `dotenv-cli` (v11 syntax: `dotenv run -f <file> --override --`). Applied and seeded on 2026-10-19.
+- **RLS.** Supabase exposes `public` through its Data API, so migration `enable_rls` turns on row-level security with no policies on every table (and revokes the shift sequence from `anon`/`authenticated`). The app uses the `postgres` role via Prisma, which bypasses RLS; the Data API sees nothing.

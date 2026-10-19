@@ -14,7 +14,7 @@ Work is split into 4 phases in `spec/tasks/` (the development spec, derived from
 ## Stack and decisions
 
 - Next.js 16 (App Router, TypeScript), Tailwind CSS v4, shadcn/ui
-- Prisma 7 (`prisma.config.ts`, `@prisma/adapter-pg`, client generated to `src/generated/prisma`) + Supabase PostgreSQL (pooled URL on port 6543 at runtime, `DIRECT_URL` on 5432 for migrations)
+- Prisma 7 (`prisma.config.ts`, `@prisma/adapter-pg`, client generated to `src/generated/prisma`) + Supabase PostgreSQL (pooled URL on port 6543 at runtime, `DIRECT_URL` = session pooler on 5432 for migrations; the direct host is IPv6-only). RLS is on for every table with no policies: the app connects as `postgres` via Prisma, never through the Supabase Data API. New tables need RLS enabled in their migration.
 - Local dev DB: Supabase CLI stack in Docker (`npm run db:start`), on ports 3432x (Windows/Hyper-V reserves 54xxx). Tests use a separate `shiftpatch_test` DB in the same container (`TEST_DATABASE_URL`, localhost only).
 - Shift IDs come from the `shift_id_seq` sequence via `nextShiftId()` in `src/lib/shifts.ts`. Hyphenated enum values (`no-show`, `tb-test`) are Prisma `noShow`/`tbTest`; convert with `src/lib/enums.ts`.
 - Auth: custom, `bcryptjs` + `jose` JWT. `Authorization: Bearer <token>` for the API, httpOnly cookie for the UI. One `getSession()` helper shared by route handlers and `proxy.ts` (Next 16 renamed `middleware.ts`).
