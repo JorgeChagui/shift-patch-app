@@ -8,7 +8,7 @@ Nursing shift marketplace built for a technical assessment. Agencies post open s
 
 Work is split into 4 phases in `spec/tasks/` (the development spec, derived from `spec/`). `spec/tasks/README.md` holds the status board and the cross-phase decisions that fill gaps in the spec; read it first.
 
-- Current phase: **Phase 1 — DB & Seed Data** (`spec/tasks/phase-1-db-seed.md`)
+- Current phase: **Phase 2 — API Routes** (`spec/tasks/phase-2-api.md`)
 - Plan each phase from its task file. Tick tasks (`- [x]`) as they land, and update the status board and this "Current phase" line in the same commit.
 
 ## Stack and decisions

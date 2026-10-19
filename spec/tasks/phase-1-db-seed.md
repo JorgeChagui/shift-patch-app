@@ -60,7 +60,7 @@
     - `writeAudit(tx, { actorId, action, entityType, entityId, metadata })` works with a transaction client, so state changes and their audit rows commit together.
   - **Verify:** unit tests in P1-07.
 
-- [ ] **P1-06 Minimal CI**
+- [x] **P1-06 Minimal CI**
   - **Goal:** every push and PR runs type-check and lint.
   - **Files:** `.github/workflows/ci.yml`
   - **Acceptance criteria:** Node version matches local; uses `npm ci` with caching; runs `npm run type-check` and `npm run lint`; needs no secrets.
