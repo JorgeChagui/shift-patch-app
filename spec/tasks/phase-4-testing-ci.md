@@ -33,7 +33,7 @@
   - **Acceptance criteria:** jobs for type-check, lint, `test:api`, `test:e2e`. Database from a Postgres service container (preferred) or a dedicated test Supabase project via GitHub secrets. Migrations and seed run before tests. Playwright report uploaded as an artifact on failure. Required status check on `main`.
   - **Verify:** green run on a PR.
 
-- [ ] **P4-04 Vercel deployment**
+- [x] **P4-04 Vercel deployment**
   - **Goal:** a public URL with the sample data.
   - **Files:** `vercel.json` (only if needed), `package.json` build script
   - **Acceptance criteria:** env vars set in Vercel (`DATABASE_URL`, `DIRECT_URL`, `JWT_SECRET`, `SUPABASE_URL`, `SUPABASE_SECRET_KEY`); migrations applied and seed loaded on the production DB; private Storage bucket exists; preview deploys don't touch production data.
@@ -74,3 +74,14 @@ _Record decisions made during this phase here._
 - **gitleaks** runs via its Docker image (v8.30.1) over the full history, in CI and locally. No leaks found. The only tracked env file is `.env.example`. No secret key name or value appears in `.next/static`.
 - **Upload limit 4 MB** (was 5). Vercel rejects request bodies over 4.5 MB before they reach the function, and uploads go through a Server Action. Changed in `MAX_CREDENTIAL_BYTES`, `serverActions.bodySizeLimit` (4.5mb), the bucket limit and the UI hint.
 - **Vercel ↔ Supabase.** No CORS setup: the browser never calls Supabase (Storage is server-side only, and signed URLs are API output). Preview builds are skipped (`vercel.json` `ignoreCommand`), and the env vars are Production-only. `npm run storage:setup:prod` creates or updates the private bucket.
+- **Production (2026-10-20).** Vercel project `shift-patch-app`, live at https://shift-patch-app.vercel.app. The env vars are Production-only. Migrations are up to date, and `storage:setup:prod` created the private `credentials` bucket (4 MB, pdf/png/jpeg).
+  - **Curl walkthrough** matched every spec example:
+    - login for all 5 accounts, and 401 on a bad password
+    - list (401 without a token)
+    - agency scoping, including 403 across agencies
+    - claim: Maria 200, James 403 with the exact message
+    - no-show cancel with `cancellation`
+    - post → `shift-4` (201), and a nurse posting → 403
+  - **UI walk:** each role lands on its page, and a nurse is redirected away from `/admin`. James uploaded a license, which was stored privately: the signed URL returns 200, and the unsigned public URL returns 400. The browser made no `supabase.co` requests. His claim then succeeded, and the admin board flipped live.
+  - Prod was reseeded afterwards, so the live data is the spec sample. The test PDF stays in the bucket; the seed doesn't touch Storage.
+- **Branch protection** on `main` (required checks `check`, `test`, `gitleaks`) is set in the GitHub UI by the repo owner.

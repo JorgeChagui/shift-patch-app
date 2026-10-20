@@ -2,7 +2,7 @@
 
 A nursing shift marketplace. Agencies post open shifts, nurses browse and claim them (blocked when their license has lapsed), and admins watch every shift update live.
 
-**Live:** _URL added after the first production deploy_
+**Live:** https://shift-patch-app.vercel.app
 
 | Role | Email | Lands on |
 |---|---|---|
