@@ -8,7 +8,7 @@ Nursing shift marketplace built for a technical assessment. Agencies post open s
 
 Work is split into 4 phases in `spec/tasks/` (the development spec, derived from `spec/`). `spec/tasks/README.md` holds the status board and the cross-phase decisions that fill gaps in the spec; read it first.
 
-- Current phase: **all four phases done** (live at https://shift-patch-app.vercel.app). New work: add a phase or tasks in `spec/tasks/` first.
+- Current phase: **Phase 5, login polish & security hardening** (`spec/tasks/phase-5-hardening.md`). Phases 1–4 are done and live at https://shift-patch-app.vercel.app. New work: add a phase or tasks in `spec/tasks/` first.
 - Plan each phase from its task file. Tick tasks (`- [x]`) as they land, and update the status board and this "Current phase" line in the same commit.
 
 ## Stack and decisions
