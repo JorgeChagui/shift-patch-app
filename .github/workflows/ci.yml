@@ -44,16 +44,17 @@ jobs:
 
       - run: npm ci
 
-      # Postgres + Storage (behind Kong), the same stack as local dev. Everything else is off.
-      - name: Start Supabase (db, storage, kong)
-        run: npx supabase start -x gotrue,realtime,imgproxy,mailpit,postgrest,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+      # Postgres + Storage (behind Kong), the same stack as local dev. Auth stays on: the CLI only
+      # reports API keys when it runs. Everything else is off.
+      - name: Start Supabase (db, storage, auth, kong)
+        run: npx supabase start -x realtime,imgproxy,mailpit,postgrest,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
 
       - name: Export Supabase Storage credentials
         run: |
           npx supabase status -o json > "$RUNNER_TEMP/supabase.json"
           node -e '
             const s = require(process.argv[1]);
-            console.log("status keys:", Object.keys(s).join(", "));
+            console.log(`::notice::supabase status keys: ${Object.keys(s).join(", ")}`);
             const key = s.SECRET_KEY || s.SERVICE_ROLE_KEY;
             if (!s.API_URL || !key) { console.error("Supabase status has no API_URL or secret key"); process.exit(1); }
             console.log(`::add-mask::${key}`);
