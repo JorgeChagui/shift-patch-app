@@ -50,10 +50,15 @@ jobs:
 
       - name: Export Supabase Storage credentials
         run: |
-          eval "$(npx supabase status -o env)"
-          echo "::add-mask::$SECRET_KEY"
-          echo "SUPABASE_URL=$API_URL" >> "$GITHUB_ENV"
-          echo "SUPABASE_SECRET_KEY=$SECRET_KEY" >> "$GITHUB_ENV"
+          npx supabase status -o json > "$RUNNER_TEMP/supabase.json"
+          node -e '
+            const s = require(process.argv[1]);
+            console.log("status keys:", Object.keys(s).join(", "));
+            const key = s.SECRET_KEY || s.SERVICE_ROLE_KEY;
+            if (!s.API_URL || !key) { console.error("Supabase status has no API_URL or secret key"); process.exit(1); }
+            console.log(`::add-mask::${key}`);
+            require("fs").appendFileSync(process.env.GITHUB_ENV, `SUPABASE_URL=${s.API_URL}\nSUPABASE_SECRET_KEY=${key}\n`);
+          ' "$RUNNER_TEMP/supabase.json"
 
       # globalSetup creates, migrates and seeds shiftpatch_test.
       - run: npm run test:api
