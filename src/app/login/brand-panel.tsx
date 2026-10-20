@@ -16,7 +16,8 @@ export function BrandPanel() {
   return (
     <div className="flex flex-col justify-between gap-10 bg-brand-wash px-6 py-8 sm:px-10 lg:py-12">
       <BrandMark />
-      <div className="max-w-md space-y-6">
+      {/* Centered on wide screens to mirror the form; the logo and footer keep the panel's edge. */}
+      <div className="w-full max-w-md space-y-6 lg:mx-auto 2xl:max-w-lg">
         <h1 className="text-3xl leading-tight sm:text-[2.5rem]">Every shift covered, by a nurse who&apos;s cleared to work it.</h1>
         <p className="text-lg text-ink-muted">
           Agencies post open shifts. Nurses with a current license claim them. Admins watch coverage as it happens.

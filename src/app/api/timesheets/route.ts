@@ -1,5 +1,5 @@
-import { requireRole } from "@/lib/auth";
 import { listTimesheets } from "@/lib/data/timesheets";
+import { requireRole } from "@/lib/session";
 
 /** Timesheets scoped by role: nurse → own, agency → its shifts, admin → all. */
 export async function GET(request: Request) {

@@ -1,6 +1,6 @@
-import { requireRole } from "@/lib/auth";
 import { listAgencyShifts } from "@/lib/data/shifts";
 import { jsonError, parseWith } from "@/lib/http";
+import { requireRole } from "@/lib/session";
 import { agencyParamsSchema } from "@/lib/validation";
 
 /** An agency's own shifts (decision 6: other agencies get 403, admins can read any). */

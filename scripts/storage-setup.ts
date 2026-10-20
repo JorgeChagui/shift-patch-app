@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { createClient } from "@supabase/supabase-js";
-import { ALLOWED_CREDENTIAL_TYPES, CREDENTIAL_BUCKET, MAX_CREDENTIAL_BYTES } from "../src/lib/storage";
+import { ALLOWED_CREDENTIAL_TYPES, CREDENTIAL_BUCKET, MAX_CREDENTIAL_BYTES } from "../src/lib/storage-config";
 
 // Creates (or updates) the private credentials bucket on a hosted Supabase project, matching
 // [storage.buckets.credentials] in supabase/config.toml. Idempotent.

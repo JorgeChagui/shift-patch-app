@@ -44,15 +44,15 @@ describe("POST /api/credentials", () => {
       status: "valid",
     });
 
-    const [key, file] = vi.mocked(storage.uploadCredentialFile).mock.calls[0];
+    const [key, , contentType] = vi.mocked(storage.uploadCredentialFile).mock.calls[0];
     expect(key).toMatch(/^nurse-2\/[\w-]+-license\.pdf$/);
-    expect((file as File).type).toBe("application/pdf");
+    expect(contentType).toBe("application/pdf");
     expect(await db.credential.findUnique({ where: { id: body.id } })).toMatchObject({ fileKey: key });
     expect(await latestAudit()).toMatchObject({ action: "credential.uploaded", actorId: "nurse-2", entityId: body.id });
   });
 
   it("accepts a TB test", async () => {
-    const png = new File(["png"], "tb.png", { type: "image/png" });
+    const png = new File([new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])], "tb.png", { type: "image/png" });
     const res = await upload(await login("maria"), form({ file: png, expiresAt: "2027-01-01", type: "tb-test" }));
     expect(await res.json()).toMatchObject({ type: "tb-test" });
   });

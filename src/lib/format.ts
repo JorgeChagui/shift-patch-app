@@ -63,6 +63,8 @@ export const STATUS_TONE: Record<ShiftStatus, { badge: string; bar: string }> = 
 
 const ACTION_LABEL: Record<string, string> = {
   "auth.login": "Signed in",
+  "auth.login_failed": "Failed sign-in",
+  "auth.logout": "Signed out",
   "shift.created": "Posted shift",
   "shift.claimed": "Claimed shift",
   "shift.claim_blocked": "Claim blocked",
@@ -74,7 +76,8 @@ const ACTION_LABEL: Record<string, string> = {
 };
 
 export function formatAuditAction(action: string): string {
-  return ACTION_LABEL[action] ?? action;
+  // Own keys only: a stored action like "constructor" must not resolve to Object.prototype.
+  return Object.hasOwn(ACTION_LABEL, action) ? ACTION_LABEL[action] : action;
 }
 
 /** Audit metadata as "key: value" pairs for the details column. */

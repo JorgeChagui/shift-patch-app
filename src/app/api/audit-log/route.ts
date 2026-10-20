@@ -1,6 +1,6 @@
-import { requireRole } from "@/lib/auth";
 import { listAuditLog } from "@/lib/data/audit";
 import { parseWith } from "@/lib/http";
+import { requireRole } from "@/lib/session";
 import { auditQuerySchema } from "@/lib/validation";
 
 /** Admin audit trail, newest first, paged with `limit` and `cursor` (an entry id). */

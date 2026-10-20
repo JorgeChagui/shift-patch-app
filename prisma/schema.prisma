@@ -168,3 +168,24 @@ model Notification {
   @@index([userId, readAt])
   @@map("notifications")
 }
+
+/// A failed login, for throttling (cross-phase decision 12). Pruned once older than the window.
+model LoginAttempt {
+  id        String   @id @default(cuid())
+  email     String
+  ip        String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([email, createdAt])
+  @@index([ip, createdAt])
+  @@map("login_attempts")
+}
+
+/// A session token revoked by logout (cross-phase decision 13), kept until it would have expired.
+model RevokedToken {
+  jti       String   @id
+  expiresAt DateTime @map("expires_at")
+
+  @@index([expiresAt])
+  @@map("revoked_tokens")
+}

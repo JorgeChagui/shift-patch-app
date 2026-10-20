@@ -1,8 +1,8 @@
-import { requireRole } from "@/lib/auth";
 import { MUTATION_TAGS, expireTags } from "@/lib/cache-tags";
 import { listShifts } from "@/lib/data/shifts";
 import { parseBody, resultResponse } from "@/lib/http";
 import { createShift } from "@/lib/services/shifts";
+import { requireRole } from "@/lib/session";
 import { shiftCreateSchema } from "@/lib/validation";
 
 /** The marketplace: every shift across all agencies (any signed-in role, decision 3). */

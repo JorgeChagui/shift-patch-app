@@ -13,6 +13,8 @@ import {
 
 // Every table, so truncating gives a clean slate. Keep in sync with prisma/schema.prisma.
 const TABLES = [
+  "login_attempts",
+  "revoked_tokens",
   "notifications",
   "timesheets",
   "audit_logs",

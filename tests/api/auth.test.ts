@@ -3,7 +3,8 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { POST as login } from "@/app/api/auth/login/route";
 import { POST as logout } from "@/app/api/auth/logout/route";
 import { GET as me } from "@/app/api/auth/me/route";
-import { SESSION_COOKIE, getSession, requireRole, signToken, verifyToken } from "@/lib/auth";
+import { SESSION_COOKIE, getSession, signToken, verifyToken } from "@/lib/auth";
+import { requireRole } from "@/lib/session";
 import { db } from "@/lib/db";
 import { EMAILS, latestAudit, req, resetDb } from "./helpers";
 
@@ -124,8 +125,8 @@ describe("logout and me", () => {
     expect((await me(req("/api/auth/me"))).status).toBe(401);
   });
 
-  it("logout clears the cookie", () => {
-    const cookie = logout().headers.get("set-cookie") ?? "";
+  it("logout clears the cookie", async () => {
+    const cookie = (await logout(req("/api/auth/logout", { method: "POST" }))).headers.get("set-cookie") ?? "";
     expect(cookie).toContain(`${SESSION_COOKIE}=;`);
     expect(cookie).toContain("Max-Age=0");
   });

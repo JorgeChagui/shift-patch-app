@@ -1,7 +1,7 @@
-import { requireRole } from "@/lib/auth";
 import { MUTATION_TAGS, expireTags } from "@/lib/cache-tags";
 import { parseWith, resultResponse } from "@/lib/http";
 import { withdrawShift } from "@/lib/services/shifts";
+import { requireRole } from "@/lib/session";
 import { idParamsSchema } from "@/lib/validation";
 
 /** Decision 5: the owning agency (or an admin) takes an open shift off the market for good. */

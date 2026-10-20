@@ -17,6 +17,7 @@ This is the development spec. It turns `spec/raw-requirements.md` (scope) and `s
 | 2. API Routes | [phase-2-api.md](phase-2-api.md) | done | Required routes + supporting APIs (auth, credentials, audit, timesheets, SSE, notifications) |
 | 3. Frontend & Test IDs | [phase-3-frontend.md](phase-3-frontend.md) | done | All 15 required `data-testid`s; services + Server Actions; tagged `use cache` reads |
 | 4. Testing & CI/CD | [phase-4-testing-ci.md](phase-4-testing-ci.md) | done | E2E flows, full CI (Supabase CLI), gitleaks, Vercel deploy, README |
+| 5. Login Polish & Security Hardening | [phase-5-hardening.md](phase-5-hardening.md) | in progress | Brand panel centering; SAST (Semgrep OWASP, CodeQL, eslint-plugin-security), dependency audit, headers, throttling, revocation, CSRF, misuse tests |
 
 Status values: `not started`, `in progress`, `done`.
 
@@ -37,11 +38,15 @@ These fill gaps in the technical spec. Change them here before changing behaviou
 4. **Who can cancel.** The owning agency, an admin, or the nurse who claimed the shift. Nurses may only use `reason: "advance"`. Cancelling a shift that isn't `filled` returns 409.
 5. **Statuses.** `open`, `filled`, `cancelled`. `POST /api/shifts/:id/cancel` reopens the shift (`open`, `claimedBy: null`) as the spec says. `cancelled` is reserved for an agency withdrawing a shift entirely (extra route, `POST /api/shifts/:id/withdraw`), so the admin badge can show all three.
 6. **Agency scoping.** `GET /api/agencies/:agencyId/shifts` with another agency's token returns 403. Admins can read any agency.
-7. **Status codes.** 400 validation error, 401 missing or invalid token, 403 wrong role, ownership or expired credential, 404 unknown shift or agency, 409 state conflict (e.g. claiming a filled shift). The body is always `{ "error": "<message>" }`.
+7. **Status codes.** 400 validation error, 401 missing, invalid or revoked token, 403 wrong role, ownership, expired credential or cross-site request, 404 unknown shift or agency, 409 state conflict (e.g. claiming a filled shift), 429 too many failed logins. The body is always `{ "error": "<message>" }`.
 8. **Email and PostHog substitutes.** Per the raw requirements commitment: notifications are stored as `Notification` rows and shown through `notification-banner`. Product events are recorded in the audit log, not sent to PostHog.
 9. **Timesheets.** One per filled shift, created when the shift is claimed and removed or voided when it's cancelled. Hours are derived from `startTime`/`endTime` with the overnight rule (19:00 → 07:00 = 12h). Status is `pending` or `approved`. Agencies and admins approve.
 10. **Credential types.** `license` and `tb-test` (the export wish list names both). Only `license` gates claiming.
 11. **Times.** `date`, `startTime`, `endTime` are stored as strings (`YYYY-MM-DD`, `HH:mm`, facility-local). If `endTime <= startTime` the shift ends the next day.
+12. **Login throttling.** Only failed logins count. 5 failures for one email, or 20 from one IP, within a rolling 15 minutes block further attempts with `429 { "error": "Too many login attempts, try again later" }` until the window clears. The IP is the first `x-forwarded-for` value.
+13. **Session revocation.** Every token carries a unique `jti` (plus `iss`/`aud` = `shiftpatch`). Logout revokes that one token, not the user's other sessions. A revoked token gets 401 from the API and is treated as signed out by pages. `proxy.ts` stays JWT-only (no DB); pages and handlers re-check.
+14. **CSRF.** A state-changing API request (not GET/HEAD) authenticated by the session **cookie** must come from this origin (`Origin` matching the host, or `Sec-Fetch-Site: same-origin`), else `403 Forbidden`. Requests with `Authorization: Bearer` are not CSRF-able and are unaffected, so the spec's curl examples work as before. Server Actions rely on Next's own origin check.
+15. **Accepted risks.** (a) Demo accounts and their shared password are shown on the login page and seeded in production, by design for the assessment. (b) `npm audit` (full tree) reports the `braces` advisory GHSA-vfj7-8cjw-p6xm via dev tooling only (`shadcn` CLI, `eslint-config-next`); no patched version exists, the production tree is clean, and CI gates on `npm audit --omit=dev`. (c) Claiming past-dated shifts stays allowed (the seed data relies on it).
 
 ## Scope coverage
 
@@ -54,3 +59,4 @@ These fill gaps in the technical spec. Change them here before changing behaviou
 | Real-time dashboard | P2-12, P3-07 |
 | In-app notifications (email substitute) | P2-06, P2-07, P2-14, P3-03 |
 | Deployment with sample data, green CI, exact contracts and test IDs | P1-04, P1-06, P3-09, P4-03 to P4-06 |
+| Security review (misuse, OWASP static analysis, dependency audit, type check) | P5-02 to P5-11 |

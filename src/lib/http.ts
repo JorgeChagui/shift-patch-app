@@ -35,3 +35,8 @@ export function parseWith<S extends z.ZodType>(schema: S, value: unknown): Parse
 export function resultResponse<T>(result: ServiceResult<T>, init?: ResponseInit): Response {
   return result.ok ? Response.json(result.data, init) : jsonError(result.status, result.error);
 }
+
+/** The caller's IP: the first `x-forwarded-for` hop (Vercel overwrites the header, so it can't be spoofed there). */
+export function clientIp(headers: Headers): string {
+  return headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+}

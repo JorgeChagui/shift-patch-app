@@ -1,7 +1,7 @@
-import { requireRole } from "@/lib/auth";
 import { MUTATION_TAGS, expireTags } from "@/lib/cache-tags";
 import { parseWith, resultResponse } from "@/lib/http";
 import { approveTimesheet } from "@/lib/services/timesheets";
+import { requireRole } from "@/lib/session";
 import { idParamsSchema } from "@/lib/validation";
 
 /** The owning agency or an admin approves a pending timesheet. */
