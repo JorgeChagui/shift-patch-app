@@ -1,8 +1,9 @@
-import { requireRole } from "@/lib/auth";
 import { MUTATION_TAGS, expireTags } from "@/lib/cache-tags";
 import { listAllCredentials, listNurseCredentials } from "@/lib/data/credentials";
 import { jsonError, parseWith, resultResponse } from "@/lib/http";
 import { uploadCredential } from "@/lib/services/credentials";
+import { requireRole } from "@/lib/session";
+import { MAX_CREDENTIAL_REQUEST_BYTES } from "@/lib/storage-config";
 import { credentialUploadSchema } from "@/lib/validation";
 
 /** Nurses see their own credentials; admins see everyone's, with short-lived download URLs. */
@@ -19,6 +20,10 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const session = await requireRole(request, "nurse");
   if (session instanceof Response) return session;
+
+  // Refuse an oversized body before buffering it; the service still checks the file itself.
+  const length = Number(request.headers.get("content-length"));
+  if (length > MAX_CREDENTIAL_REQUEST_BYTES) return jsonError(413, "file: must be 4 MB or smaller");
 
   let form: FormData;
   try {

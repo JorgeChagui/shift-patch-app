@@ -1,12 +1,9 @@
+import "server-only";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { CREDENTIAL_BUCKET } from "@/lib/storage-config";
 
 // Credential files live in a private Supabase Storage bucket. Server-side only: the secret
-// key bypasses storage policies. Tests mock this module.
-
-export const CREDENTIAL_BUCKET = "credentials";
-// Vercel caps request bodies at 4.5 MB, so uploads (sent through a Server Action) stay under it.
-export const MAX_CREDENTIAL_BYTES = 4 * 1024 * 1024;
-export const ALLOWED_CREDENTIAL_TYPES = ["application/pdf", "image/jpeg", "image/png"];
+// key bypasses storage policies. Tests mock this module. Upload rules: src/lib/storage-config.ts.
 
 let client: SupabaseClient | undefined;
 
@@ -20,9 +17,16 @@ function storage() {
   return client.storage.from(CREDENTIAL_BUCKET);
 }
 
-export async function uploadCredentialFile(key: string, file: File): Promise<void> {
-  const { error } = await storage().upload(key, file, { contentType: file.type, upsert: false });
+/** Stores the file under `contentType`, the type sniffed from its bytes (not the client's claim). */
+export async function uploadCredentialFile(key: string, file: File, contentType: string): Promise<void> {
+  const { error } = await storage().upload(key, file, { contentType, upsert: false });
   if (error) throw new Error(`Credential upload failed: ${error.message}`);
+}
+
+/** Removes a stored file (cleanup when the credential row couldn't be written). */
+export async function deleteCredentialFile(key: string): Promise<void> {
+  const { error } = await storage().remove([key]);
+  if (error) throw new Error(`Credential delete failed: ${error.message}`);
 }
 
 /** Short-lived download URL for a private credential file. */

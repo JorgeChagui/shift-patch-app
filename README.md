@@ -44,6 +44,8 @@ npm run lint
 npm run test:api       # Vitest: route handlers called directly, against shiftpatch_test
 npm run test:e2e       # Playwright: production build on :3100, against shiftpatch_e2e
 npm run check:testids  # all 15 required data-testids exist in src/
+npm run security:audit # npm audit of production dependencies (high and above fails)
+npm run security:sast  # Semgrep OWASP Top 10 + TS/React/Next.js/secrets rules (Docker)
 ```
 
 The test suites never touch dev or production data:
@@ -61,9 +63,29 @@ The test suites never touch dev or production data:
   The HTML report is written to `playwright-report/`.
 
 **CI** (`.github/workflows/ci.yml`) runs on every push and PR:
-- `check`: type-check and lint
+- `check`: type-check, lint (including `eslint-plugin-security`) and `security:audit`
 - `test`: the Supabase CLI stack (Postgres + Storage) in the runner, then `test:api` and `test:e2e`. The Playwright report is uploaded when it fails.
 - `gitleaks`: scans the full git history
+- `semgrep`: the `security:sast` scan; any finding fails the build
+
+CodeQL (`security-extended`) runs on pushes and PRs to `main` and weekly; Dependabot proposes grouped npm and Actions updates. Workflows run with read-only tokens, and actions are pinned to commit SHAs.
+
+## Security
+
+Hardened in [Phase 5](spec/tasks/phase-5-hardening.md). `tests/api/security.test.ts` attacks each control below and expects it to hold.
+
+- **Access control:** every handler authenticates and checks the role on the server, with ownership checks (an agency can only touch its own shifts, a user only their own notifications). zod validates every body and param, with length caps.
+- **Tokens:** HS256 pinned, with `iss`, `aud`, `exp` and a unique `jti` verified. `JWT_SECRET` must be at least 32 characters. Logout revokes that token server-side, so a stolen copy stops working.
+- **Brute force:** after 5 failed logins per email, or 20 per IP, within 15 minutes, login returns `429`. Failed logins are audited. Unknown emails cost the same bcrypt work, so response times don't reveal which accounts exist.
+- **CSRF:** Server Actions use Next's origin check. API calls that change state and are authenticated by the cookie must be same-origin; Bearer calls are not affected.
+- **Headers:** CSP (`frame-ancestors 'none'`, `object-src 'none'`, same-origin everything), `X-Frame-Options: DENY`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`, HSTS and COOP. `X-Powered-By` is off. The CSP is static rather than nonce-based, so pages stay statically prerendered; that is why `script-src` allows `'unsafe-inline'`.
+- **Uploads:** PDF, JPEG or PNG, checked by their magic bytes (not the client's label), at most 4 MB (oversized bodies are refused before parsing). Files go to a private bucket under a server-generated key, and are only served through 5-minute signed URLs.
+- **Redirects:** `?next=` only accepts same-site paths (`//x`, `/\x` and similar are rejected).
+- **Data:** Prisma queries only (the one raw query is a tagged template). RLS denies Supabase's Data API on every table. Secrets live only in env vars, and gitleaks scans the history.
+
+**Accepted risks** ([decision 15](spec/tasks/README.md#cross-phase-decisions)):
+- The demo accounts and their shared password are on the login page and in production, on purpose, for reviewers.
+- `npm audit` over the full tree reports `braces` (GHSA-vfj7-8cjw-p6xm) through dev tooling only (`shadcn` CLI, `eslint-config-next`). No patched version exists, and the production tree is clean.
 
 ## Architecture
 
@@ -72,7 +94,7 @@ The test suites never touch dev or production data:
 - **Layers:** route handlers (`src/app/api`) and Server Actions (`src/actions`) are thin. Business rules live in `src/lib/services` (mutations returning a `ServiceResult`, each writing its audit row in the same transaction). Reads live in `src/lib/data` (`'use cache'` with tags that every mutation expires).
 - **Auth:** custom. `bcryptjs` hashes, plus an 8 h HS256 JWT (`jose`).
   - The API accepts `Authorization: Bearer <token>`; the UI uses an httpOnly `SameSite=Lax` cookie.
-  - One `getSession()` serves both route handlers and `src/proxy.ts`, which redirects by role before rendering. Every handler checks the role again on the server.
+  - `src/proxy.ts` redirects by role before rendering, from the token alone. Route handlers (`requireRole`) and pages (`requireSession`) check again in `src/lib/session.ts`, which also rejects revoked tokens and cross-site cookie requests.
 - **Real-time admin dashboard:** `GET /api/admin/stream` is Server-Sent Events. It polls the DB every 3 s (latest audit entry and shift update) and sends `shifts-changed`. It closes after 55 s to fit the Vercel function limit, and the browser reconnects. The client also polls every 10 s as a fallback. There is no in-memory emitter, because serverless instances don't share memory.
 - **Credential files:** a private Supabase Storage bucket, accessed only from the server with `SUPABASE_SECRET_KEY`.
   - Uploads go browser → Server Action → Storage, up to 4 MB (under Vercel's 4.5 MB request body limit).

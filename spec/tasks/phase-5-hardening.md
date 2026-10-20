@@ -6,13 +6,13 @@
 
 ---
 
-- [ ] **P5-01 Center the brand copy**
+- [x] **P5-01 Center the brand copy**
   - **Goal:** on wide screens the login page's left panel looks as balanced as the centered form on the right.
   - **Files:** `src/app/login/brand-panel.tsx`
   - **Acceptance criteria:** from `lg` up, the headline, paragraph and sample shifts block is horizontally centered in the left panel (wider cap at `2xl`). The logo stays top-left and the footer bottom-left. Below `lg`, nothing changes.
   - **Verify:** screenshots of `/login` at 1024, 1440 and 2560 px wide, and at phone width.
 
-- [ ] **P5-02 Static analysis (OWASP SAST)**
+- [x] **P5-02 Static analysis (OWASP SAST)**
   - **Goal:** the OWASP rule sets reviewers run find nothing, and CI keeps it that way.
   - **Files:** `eslint.config.mjs`, `.github/workflows/ci.yml`, `.github/workflows/codeql.yml`, `.semgrepignore`, `package.json`
   - **Acceptance criteria:**
@@ -22,7 +22,7 @@
     - Every finding is fixed, or suppressed inline with a written reason.
   - **Verify:** `npm run lint`, `npm run security:sast`, then a green CI run.
 
-- [ ] **P5-03 Dependency audit**
+- [x] **P5-03 Dependency audit**
   - **Goal:** the production dependency tree has no known high or critical advisories.
   - **Files:** `package.json`, `package-lock.json`, `.github/dependabot.yml`, `.github/workflows/ci.yml`
   - **Acceptance criteria:**
@@ -32,7 +32,7 @@
     - The remaining dev-only advisory is documented (decision 15).
   - **Verify:** `npm run security:audit`; `npm run build` still works.
 
-- [ ] **P5-04 CI hardening**
+- [x] **P5-04 CI hardening**
   - **Goal:** workflows run with least privilege on pinned actions.
   - **Files:** `.github/workflows/*.yml`
   - **Acceptance criteria:**
@@ -40,7 +40,7 @@
     - Third-party actions are pinned to commit SHAs with a version comment.
   - **Verify:** green CI run.
 
-- [ ] **P5-05 Security headers**
+- [x] **P5-05 Security headers**
   - **Goal:** browsers get clickjacking, MIME-sniffing, referrer and transport protections.
   - **Files:** `next.config.ts`
   - **Acceptance criteria:**
@@ -52,7 +52,7 @@
     - The CSP is static (no nonce), so static and cached rendering keep working. The SSE dashboard, fonts and signed credential links still work.
   - **Verify:** `curl -I` against `npm run start`; the E2E header assertion (P5-11).
 
-- [ ] **P5-06 Login throttling**
+- [x] **P5-06 Login throttling**
   - **Goal:** passwords can't be brute-forced (decision 12).
   - **Files:** `prisma/schema.prisma`, a new migration, `prisma/seed.ts`, `src/lib/services/auth.ts`, `src/app/api/auth/login/route.ts`, `src/actions/auth.ts`
   - **Acceptance criteria:**
@@ -62,7 +62,7 @@
     - The seed clears the table.
   - **Verify:** API tests (P5-11).
 
-- [ ] **P5-07 Session revocation and JWT tightening**
+- [x] **P5-07 Session revocation and JWT tightening**
   - **Goal:** a token is dead after logout (decision 13), and token checks are strict.
   - **Files:** `src/lib/auth.ts`, `src/lib/session.ts`, `prisma/schema.prisma` + migration, logout route and action
   - **Acceptance criteria:**
@@ -73,19 +73,19 @@
     - `proxy.ts` stays DB-free.
   - **Verify:** API tests (P5-11).
 
-- [ ] **P5-08 CSRF for cookie-authenticated API calls**
+- [x] **P5-08 CSRF for cookie-authenticated API calls**
   - **Goal:** another site can't drive the JSON API with the user's cookie (decision 14).
   - **Files:** `src/lib/session.ts` (or wherever the DB-aware `requireRole` lives)
   - **Acceptance criteria:** a state-changing request authenticated by the cookie, with a cross-origin `Origin` (or neither a same-origin `Origin` nor `Sec-Fetch-Site: same-origin`), returns 403. Bearer requests are unaffected.
   - **Verify:** API tests (P5-11).
 
-- [ ] **P5-09 Open redirect**
+- [x] **P5-09 Open redirect**
   - **Goal:** `?next=` can only point at this site.
   - **Files:** `src/lib/redirect.ts`, `src/actions/auth.ts`
   - **Acceptance criteria:** `safeNext` resolves the value against a fixed origin and keeps only same-origin `pathname + search`. It rejects `//x`, `/\x`, control characters and absolute URLs.
   - **Verify:** unit tests (P5-11).
 
-- [ ] **P5-10 Input and upload hardening**
+- [x] **P5-10 Input and upload hardening**
   - **Goal:** no oversized input, and no spoofed file type.
   - **Files:** `src/lib/validation.ts`, `src/lib/services/credentials.ts`, `src/lib/storage.ts`, `src/lib/storage-config.ts`, `src/app/api/credentials/route.ts`, `scripts/storage-setup.ts`
   - **Acceptance criteria:**
@@ -97,7 +97,7 @@
     - `storage.ts` is `server-only`.
   - **Verify:** API tests (P5-11).
 
-- [ ] **P5-11 Misuse test suite**
+- [x] **P5-11 Misuse test suite**
   - **Goal:** each control above is proven by a test that attempts the attack.
   - **Files:** `tests/api/security.test.ts`, `tests/e2e/auth.spec.ts`
   - **Acceptance criteria:**
@@ -112,7 +112,7 @@
     - **E2E:** asserts the security headers on `/login`.
   - **Verify:** `npm run test:api`, `npm run test:e2e`.
 
-- [ ] **P5-12 Docs**
+- [x] **P5-12 Docs**
   - **Goal:** reviewers can see the security controls and re-run the checks.
   - **Files:** `README.md`, `AGENTS.md`, `spec/tasks/README.md`
   - **Acceptance criteria:**
@@ -129,3 +129,15 @@
 ## Notes
 
 _Record decisions made during this phase here._
+
+- **Brand panel.** Only the copy block is centered (`lg:mx-auto`, `2xl:max-w-lg`). The logo and footer stay on the panel's edge, as chosen. Checked at 390, 1024, 1440 and 2560 px.
+- **Where auth lives.** `src/lib/auth.ts` (token sign/verify, `requestToken`, `getSession`) stays DB-free for `proxy.ts`. `requireRole` moved to `src/lib/session.ts`, next to `getServerSession`, and both check `RevokedToken`. That adds one primary-key lookup per authenticated request. Pages still get the proxy's fast redirect; a revoked cookie is caught when the page calls `requireSession`.
+- **Revoked rows** are pruned on each logout (expired tokens fail verification anyway). **Login attempts** are pruned on each failure.
+- **Dummy hash.** The timing-equaliser bcrypt hash used to be a literal, which Semgrep's `detected-bcrypt-hash` flagged. It is now generated from random bytes on first use. On a cold instance, the first unknown-email login pays one extra hash.
+- **eslint-plugin-security.** Recommended config. `detect-object-injection` is off: all 25 hits were typed-union or array-index lookups. The one real case, `formatAuditAction` indexing a plain object with a stored string (where `"constructor"` resolved to a prototype function), now uses `Object.hasOwn`. `scripts/` may use non-literal fs paths and regexes built from in-file constants.
+- **Semgrep** `1.179.0`, pinned. Rulesets: `p/owasp-top-ten`, `p/typescript`, `p/react`, `p/nextjs`, `p/secrets`. The first run found the bcrypt literal and 7 mutable action tags; both are fixed, with no suppressions.
+- **Pinned actions.** checkout v7.0.1, setup-node v7.0.0, cache v6.1.0, upload-artifact v7.0.1, codeql-action v4.38.2. Newer setup-node and upload-artifact releases were under two weeks old. Dependabot has a 14-day cooldown.
+- **CSP** follows Next's "Without Nonces" guide. `upgrade-insecure-requests` is added only on Vercel (`VERCEL=1`), because the local and E2E servers are plain http. HSTS is ignored over http, so it is always sent.
+- **Uploads.** The declared type must be allowed, and the magic bytes decide the stored `contentType`: a real PNG labelled as a PDF is stored as `image/png`. The API route returns 413 for a `Content-Length` over 4 MB + 64 KB.
+- **Local production builds.** `next start` loads `.env.production.local`, which points at the production DB. A manual check during this phase briefly ran against it. Every request failed on the first query, because `login_attempts` doesn't exist there yet, so nothing was written. Override `DATABASE_URL`/`DIRECT_URL` when doing this by hand (now noted in AGENTS.md). Playwright already overrides them.
+- **Deploy order.** The migration is additive. Run `npm run db:deploy:prod` **before** merging: once the new code is deployed, login fails with a 500 until the tables exist.

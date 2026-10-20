@@ -1,4 +1,4 @@
-import { requireRole } from "@/lib/auth";
+import { requireRole } from "@/lib/session";
 
 export async function GET(request: Request) {
   const session = await requireRole(request);

@@ -1,7 +1,7 @@
-import { requireRole } from "@/lib/auth";
 import { MUTATION_TAGS, expireTags } from "@/lib/cache-tags";
 import { parseWith, resultResponse } from "@/lib/http";
 import { claimShift } from "@/lib/services/shifts";
+import { requireRole } from "@/lib/session";
 import { idParamsSchema } from "@/lib/validation";
 
 export async function POST(request: Request, ctx: RouteContext<"/api/shifts/[id]/claim">) {

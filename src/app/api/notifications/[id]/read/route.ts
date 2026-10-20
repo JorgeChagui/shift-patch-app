@@ -1,7 +1,7 @@
-import { requireRole } from "@/lib/auth";
 import { MUTATION_TAGS, expireTags } from "@/lib/cache-tags";
 import { parseWith, resultResponse } from "@/lib/http";
 import { markNotificationRead } from "@/lib/services/notifications";
+import { requireRole } from "@/lib/session";
 import { idParamsSchema } from "@/lib/validation";
 
 /** Marks one of the caller's own notifications as read (idempotent). */

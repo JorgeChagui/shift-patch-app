@@ -1,5 +1,5 @@
-import { requireRole } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { requireRole } from "@/lib/session";
 import { shiftChangesStream } from "@/lib/stream";
 
 // The stream closes itself at ~55s, inside this limit; the client reconnects.

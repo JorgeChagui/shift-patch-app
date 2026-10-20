@@ -1,0 +1,8 @@
+# Generated or third-party code, build output, and test fixtures.
+node_modules/
+.next/
+src/generated/
+playwright-report/
+test-results/
+tests/e2e/files/
+.claude/

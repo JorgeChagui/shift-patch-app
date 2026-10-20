@@ -1,7 +1,7 @@
-import { requireRole } from "@/lib/auth";
 import { MUTATION_TAGS, expireTags } from "@/lib/cache-tags";
 import { parseBody, parseWith, resultResponse } from "@/lib/http";
 import { cancelShift } from "@/lib/services/shifts";
+import { requireRole } from "@/lib/session";
 import { cancelSchema, idParamsSchema } from "@/lib/validation";
 
 /** Cancellation / no-show: reopens a filled shift (rules in cancelShift, decision 4). */

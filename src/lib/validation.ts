@@ -27,8 +27,9 @@ export const idParamsSchema = z.object({ id: idParam });
 export const agencyParamsSchema = z.object({ agencyId: idParam });
 
 export const loginSchema = z.object({
-  email: z.string().trim().toLowerCase().min(1, "is required"),
-  password: z.string().min(1, "is required"),
+  // RFC 5321 caps an address at 254; bcrypt only reads 72 bytes, so longer passwords are noise.
+  email: z.string().trim().toLowerCase().min(1, "is required").max(254),
+  password: z.string().min(1, "is required").max(128),
 });
 
 export const shiftCreateSchema = z

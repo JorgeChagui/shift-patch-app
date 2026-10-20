@@ -80,3 +80,31 @@ test("an agency visiting a nurse page is sent back to their own home", async ({ 
   await page.goto("/shifts");
   await expect(page).toHaveURL(/\/agency\/shifts$/);
 });
+
+test("pages send the security headers and run clean under the CSP", async ({ page }) => {
+  const violations: string[] = [];
+  page.on("console", (msg) => {
+    if (/Content Security Policy|Refused to/i.test(msg.text())) violations.push(msg.text());
+  });
+  const res = await page.goto("/login");
+  const headers = res!.headers();
+  expect(headers["content-security-policy"]).toContain("frame-ancestors 'none'");
+  expect(headers["content-security-policy"]).toContain("object-src 'none'");
+  expect(headers["x-frame-options"]).toBe("DENY");
+  expect(headers["x-content-type-options"]).toBe("nosniff");
+  expect(headers["referrer-policy"]).toBe("strict-origin-when-cross-origin");
+  expect(headers["x-powered-by"]).toBeUndefined();
+
+  // Sign in and load the live dashboard (SSE) to catch anything the CSP would block.
+  await loginViaUi(page, "admin");
+  await expect(page.getByTestId("admin-dashboard-shift-table")).toBeVisible();
+  expect(violations).toEqual([]);
+});
+
+test("?next= can't send the user to another site", async ({ page }) => {
+  await page.goto("/login?next=%2F%5Cevil.example");
+  await page.getByTestId("login-email-input").fill("maria.lopez@example.com");
+  await page.getByTestId("login-password-input").fill("Trial2026!");
+  await page.getByTestId("login-submit-button").click();
+  await expect(page).toHaveURL(/^http:\/\/localhost:\d+\/shifts$/);
+});

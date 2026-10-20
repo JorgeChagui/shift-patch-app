@@ -33,6 +33,8 @@ npm run lint         # eslint .
 npm run test:api     # vitest run (tests/api)
 npm run test:e2e     # playwright test (tests/e2e)
 npm run check:testids # all 15 required data-testids present in src/
+npm run security:audit # npm audit --omit=dev --audit-level=high
+npm run security:sast  # Semgrep OWASP Top 10 + TS/React/Next.js/secrets (Docker); CI fails on findings
 
 npm run db:start     # start local Supabase (Docker); db:stop / db:status
 npm run db:migrate   # prisma migrate dev (create/apply migrations locally)
@@ -58,7 +60,9 @@ npm run db:deploy:prod / db:seed:prod   # against .env.production.local (confirm
 - Every state change writes an audit log entry.
 - Keep `date`, `startTime`, `endTime` as strings (`YYYY-MM-DD`, `HH:mm`, facility-local); overnight shifts end the next day.
 - Never commit secrets. Only `.env.example` is tracked.
-- Before declaring work done, run `type-check`, `lint`, `test:api` and `test:e2e`.
+- Before declaring work done, run `type-check`, `lint`, `test:api` and `test:e2e` (plus `security:sast` and `security:audit` for security-relevant changes).
+- Route handlers authenticate with `requireRole` from `src/lib/session.ts` (revocation + CSRF aware). `src/lib/auth.ts` stays DB-free for `proxy.ts`.
+- `next start` locally loads `.env.production.local` (production DB). Override `DATABASE_URL`/`DIRECT_URL` when running a local production build by hand.
 
 ## Skills (`.claude/skills/`)
 
