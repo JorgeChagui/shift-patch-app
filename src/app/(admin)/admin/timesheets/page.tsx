@@ -1,8 +1,18 @@
-export default function Page() {
+import type { Metadata } from "next";
+import { Suspense } from "react";
+import { PageHeader } from "@/components/page-header";
+import { TableSkeleton } from "@/components/skeletons";
+import { TimesheetsSection } from "@/components/timesheets/timesheets-section";
+
+export const metadata: Metadata = { title: "Timesheets" };
+
+export default function AdminTimesheetsPage() {
   return (
-    <main className="mx-auto w-full max-w-3xl p-8">
-      <h1 className="text-2xl font-semibold">Timesheets</h1>
-      <p className="mt-2 text-zinc-600">Coming soon.</p>
-    </main>
+    <>
+      <PageHeader title="Timesheets" description="One per claimed shift. Approve hours once the shift is worked." />
+      <Suspense fallback={<TableSkeleton />}>
+        <TimesheetsSection role="admin" />
+      </Suspense>
+    </>
   );
 }

@@ -1,6 +1,14 @@
 import { z } from "zod";
 import { CANCELLATION_REASONS, CREDENTIAL_TYPES } from "@/lib/enums";
 
+/** The first zod issue as "<field>: <message>", the API's 400 error text. */
+export function formatZodError(error: z.ZodError): string {
+  const issue = error.issues[0];
+  if (!issue) return "Invalid request";
+  const path = issue.path.join(".");
+  return path ? `${path}: ${issue.message}` : issue.message;
+}
+
 /** A real calendar date in "YYYY-MM-DD" form (rejects 2026-02-30). */
 export const dateString = z
   .string()
@@ -48,3 +56,9 @@ export const auditQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(50),
   cursor: idParam.optional(),
 });
+
+export type LoginInput = z.infer<typeof loginSchema>;
+export type ShiftCreateInput = z.infer<typeof shiftCreateSchema>;
+export type CancelInput = z.infer<typeof cancelSchema>;
+export type CredentialUploadInput = z.infer<typeof credentialUploadSchema>;
+export type AuditQuery = z.infer<typeof auditQuerySchema>;

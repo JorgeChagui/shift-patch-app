@@ -1,8 +1,23 @@
-export default function Page() {
+import type { Metadata } from "next";
+import { Suspense } from "react";
+import { PageHeader } from "@/components/page-header";
+import { TableSkeleton } from "@/components/skeletons";
+import { AgencyShiftTable } from "./agency-shift-table";
+import { PostShiftDialog } from "./post-shift-dialog";
+
+export const metadata: Metadata = { title: "Agency shifts" };
+
+export default function AgencyShiftsPage() {
   return (
-    <main className="mx-auto w-full max-w-3xl p-8">
-      <h1 className="text-2xl font-semibold">Agency shifts</h1>
-      <p className="mt-2 text-zinc-600">Coming soon.</p>
-    </main>
+    <>
+      <PageHeader
+        title="Your shifts"
+        description="Post open shifts, see who's covering them, and cancel or withdraw when plans change."
+        action={<PostShiftDialog />}
+      />
+      <Suspense fallback={<TableSkeleton />}>
+        <AgencyShiftTable />
+      </Suspense>
+    </>
   );
 }

@@ -20,6 +20,12 @@ export function requiredRole(pathname: string): Role | null {
 }
 
 export async function proxy(request: NextRequest) {
+  // "/" has no page of its own: the role's home when signed in, else the login page.
+  if (request.nextUrl.pathname === "/") {
+    const session = await getSession(request);
+    return NextResponse.redirect(new URL(session ? ROLE_HOME[session.role] : "/login", request.url));
+  }
+
   const role = requiredRole(request.nextUrl.pathname);
   if (!role) return NextResponse.next();
 
@@ -36,5 +42,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/shifts/:path*", "/credentials/:path*", "/agency/:path*", "/admin/:path*"],
+  matcher: ["/", "/shifts/:path*", "/credentials/:path*", "/agency/:path*", "/admin/:path*"],
 };

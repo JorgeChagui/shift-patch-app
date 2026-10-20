@@ -1,15 +1,10 @@
 import type { z } from "zod";
+import type { ServiceResult } from "@/lib/result";
+import { formatZodError } from "@/lib/validation";
 
 /** Every error response: `{ "error": "<message>" }`. */
 export function jsonError(status: number, message: string): Response {
   return Response.json({ error: message }, { status });
-}
-
-function firstIssue(error: z.ZodError): string {
-  const issue = error.issues[0];
-  if (!issue) return "Invalid request";
-  const path = issue.path.join(".");
-  return path ? `${path}: ${issue.message}` : issue.message;
 }
 
 type Parsed<T> = { data: T; error?: never } | { data?: never; error: Response };
@@ -32,6 +27,11 @@ export async function parseBody<S extends z.ZodType>(
 /** Validates route params, query params or any other plain value. */
 export function parseWith<S extends z.ZodType>(schema: S, value: unknown): Parsed<z.infer<S>> {
   const result = schema.safeParse(value);
-  if (!result.success) return { error: jsonError(400, firstIssue(result.error)) };
+  if (!result.success) return { error: jsonError(400, formatZodError(result.error)) };
   return { data: result.data };
+}
+
+/** Turns a service result into the API response: the data as JSON, or `{ error }` with its status. */
+export function resultResponse<T>(result: ServiceResult<T>, init?: ResponseInit): Response {
+  return result.ok ? Response.json(result.data, init) : jsonError(result.status, result.error);
 }

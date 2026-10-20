@@ -49,4 +49,16 @@ describe("proxy", () => {
     expect((await visit("/login")).location).toBeNull();
     expect((await visit("/shiftsabc")).location).toBeNull();
   });
+
+  it("sends / to /login without a session", async () => {
+    expect(await visit("/")).toEqual({ status: 307, location: "http://localhost/login" });
+  });
+
+  it.each([
+    ["nurse", "/shifts"],
+    ["agency", "/agency/shifts"],
+    ["admin", "/admin"],
+  ] as const)("sends / for a %s to %s", async (role, home) => {
+    expect(await visit("/", role)).toEqual({ status: 307, location: `http://localhost${home}` });
+  });
 });
