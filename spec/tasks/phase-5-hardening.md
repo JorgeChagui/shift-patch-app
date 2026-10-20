@@ -141,3 +141,10 @@ _Record decisions made during this phase here._
 - **Uploads.** The declared type must be allowed, and the magic bytes decide the stored `contentType`: a real PNG labelled as a PDF is stored as `image/png`. The API route returns 413 for a `Content-Length` over 4 MB + 64 KB.
 - **Local production builds.** `next start` loads `.env.production.local`, which points at the production DB. A manual check during this phase briefly ran against it. Every request failed on the first query, because `login_attempts` doesn't exist there yet, so nothing was written. Override `DATABASE_URL`/`DIRECT_URL` when doing this by hand (now noted in AGENTS.md). Playwright already overrides them.
 - **Deploy order.** The migration is additive. Run `npm run db:deploy:prod` **before** merging: once the new code is deployed, login fails with a 500 until the tables exist.
+- **Production (2026-10-20).**
+  - `db:deploy:prod` applied `20261020064638_login_throttling_and_token_revocation`, and RLS is confirmed on both new tables. This ran before the merge.
+  - PR #6 merged with `check`, `test`, `gitleaks`, `semgrep` and CodeQL all green.
+  - The live site sends every security header (plus `upgrade-insecure-requests` on Vercel), and `X-Powered-By` is gone.
+  - Live API checks: no token and a malformed cookie both get 401. A forged `alg: none` token gets a plain-text 403 from Vercel's firewall before it reaches the app (the app's own 401 for it is covered by the API tests).
+  - Throttling was not exercised live, to keep failed-sign-in rows out of the production audit log. It is covered by the API tests and a local production build.
+- **Required checks** live in the GitHub ruleset `main-2` (classic branch protection was migrated to Rulesets): `check`, `test`, `gitleaks`, `semgrep`.

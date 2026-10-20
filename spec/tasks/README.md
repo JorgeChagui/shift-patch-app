@@ -17,7 +17,7 @@ This is the development spec. It turns `spec/raw-requirements.md` (scope) and `s
 | 2. API Routes | [phase-2-api.md](phase-2-api.md) | done | Required routes + supporting APIs (auth, credentials, audit, timesheets, SSE, notifications) |
 | 3. Frontend & Test IDs | [phase-3-frontend.md](phase-3-frontend.md) | done | All 15 required `data-testid`s; services + Server Actions; tagged `use cache` reads |
 | 4. Testing & CI/CD | [phase-4-testing-ci.md](phase-4-testing-ci.md) | done | E2E flows, full CI (Supabase CLI), gitleaks, Vercel deploy, README |
-| 5. Login Polish & Security Hardening | [phase-5-hardening.md](phase-5-hardening.md) | in progress | Brand panel centering; SAST (Semgrep OWASP, CodeQL, eslint-plugin-security), dependency audit, headers, throttling, revocation, CSRF, misuse tests |
+| 5. Login Polish & Security Hardening | [phase-5-hardening.md](phase-5-hardening.md) | done | Brand panel centering; SAST (Semgrep OWASP, CodeQL, eslint-plugin-security), dependency audit, headers, throttling, revocation, CSRF, misuse tests |
 
 Status values: `not started`, `in progress`, `done`.
 
