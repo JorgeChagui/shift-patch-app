@@ -14,8 +14,8 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     serverActions: {
-      // Credential uploads are up to 5 MB, plus multipart overhead.
-      bodySizeLimit: "6mb",
+      // Credential uploads are up to 4 MB plus multipart overhead, under Vercel's 4.5 MB body cap.
+      bodySizeLimit: "4.5mb",
     },
   },
   turbopack: {

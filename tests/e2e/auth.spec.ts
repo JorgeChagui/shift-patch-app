@@ -1,17 +1,7 @@
-import { expect, test, type Page } from "@playwright/test";
+import { banner, expect, loginViaUi, test } from "./fixtures";
 
-// Read-only smoke checks: each role signs in through the UI and each page renders its
-// required data-testids. Mutating flows (claim, cancel, post) are covered in Phase 4.
-
-const PASSWORD = "Trial2026!";
-
-async function loginAs(page: Page, email: string) {
-  await page.goto("/login");
-  await page.getByTestId("login-email-input").fill(email);
-  await page.getByTestId("login-password-input").fill(PASSWORD);
-  await page.getByTestId("login-submit-button").click();
-  await page.waitForURL((url) => !url.pathname.startsWith("/login"));
-}
+// Read-only: sign-in, role landing pages, role gating and the test IDs that don't depend on
+// shift state (other specs claim and cancel in parallel; they assert the row-level IDs).
 
 test("/ sends a visitor to the login page", async ({ page }) => {
   await page.goto("/");
@@ -21,21 +11,24 @@ test("/ sends a visitor to the login page", async ({ page }) => {
   await expect(page.getByTestId("login-submit-button")).toBeVisible();
 });
 
+test("a signed-out visit to a role page goes to the login page", async ({ page }) => {
+  await page.goto("/shifts");
+  await expect(page).toHaveURL(/\/login\?next=%2Fshifts$/);
+});
+
 test("a wrong password shows the error banner", async ({ page }) => {
   await page.goto("/login");
   await page.getByTestId("login-email-input").fill("maria.lopez@example.com");
   await page.getByTestId("login-password-input").fill("not-the-password");
   await page.getByTestId("login-submit-button").click();
-  await expect(page.getByTestId("notification-banner")).toHaveText("Invalid email or password");
+  await expect(banner(page)).toHaveText("Invalid email or password");
   await expect(page).toHaveURL(/\/login$/);
 });
 
-test("nurse pages render their test IDs", async ({ page }) => {
-  await loginAs(page, "maria.lopez@example.com");
+test("a nurse lands on the marketplace", async ({ page }) => {
+  await loginViaUi(page, "maria");
   await expect(page).toHaveURL(/\/shifts$/);
-  await expect(page.getByTestId("shift-list-item").first()).toBeVisible();
-  await expect(page.getByTestId("shift-claim-button").first()).toBeVisible();
-  await expect(page.getByTestId("shift-cancel-button").first()).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Open shifts" })).toBeVisible();
 
   await page.getByRole("link", { name: "Credentials" }).click();
   await expect(page.getByTestId("credential-upload-input")).toBeVisible();
@@ -43,15 +36,14 @@ test("nurse pages render their test IDs", async ({ page }) => {
 });
 
 test("a nurse with an expired license is warned", async ({ page }) => {
-  await loginAs(page, "james.cook@example.com");
+  await loginViaUi(page, "james");
   await expect(page.getByRole("note")).toContainText("Your license expired");
   await expect(page.getByRole("link", { name: "upload a current license" })).toHaveAttribute("href", "/credentials");
 });
 
-test("agency pages render their test IDs", async ({ page }) => {
-  await loginAs(page, "admin@sunrisehealth.example");
+test("an agency lands on its shifts", async ({ page }) => {
+  await loginViaUi(page, "agencyA");
   await expect(page).toHaveURL(/\/agency\/shifts$/);
-  await expect(page.getByTestId("shift-cancel-button").first()).toBeVisible();
 
   await page.getByTestId("agency-post-shift-button").click();
   await expect(page.getByRole("dialog")).toBeVisible();
@@ -62,8 +54,8 @@ test("agency pages render their test IDs", async ({ page }) => {
   await expect(page.getByTestId("timesheet-table")).toBeVisible();
 });
 
-test("admin pages render their test IDs", async ({ page }) => {
-  await loginAs(page, "alex.kim@example.com");
+test("an admin lands on the dashboard", async ({ page }) => {
+  await loginViaUi(page, "admin");
   await expect(page).toHaveURL(/\/admin$/);
   await expect(page.getByTestId("admin-dashboard-shift-table")).toBeVisible();
   const badges = page.getByTestId("admin-shift-status-badge");
@@ -77,8 +69,14 @@ test("admin pages render their test IDs", async ({ page }) => {
   await expect(page.getByTestId("timesheet-table")).toBeVisible();
 });
 
-test("a signed-in user is kept to their own role's pages", async ({ page }) => {
-  await loginAs(page, "maria.lopez@example.com");
+test("a nurse visiting /admin is sent back to their own home", async ({ page }) => {
+  await loginViaUi(page, "maria");
   await page.goto("/admin");
   await expect(page).toHaveURL(/\/shifts$/);
+});
+
+test("an agency visiting a nurse page is sent back to their own home", async ({ page }) => {
+  await loginViaUi(page, "agencyB");
+  await page.goto("/shifts");
+  await expect(page).toHaveURL(/\/agency\/shifts$/);
 });

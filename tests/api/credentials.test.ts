@@ -78,8 +78,8 @@ describe("POST /api/credentials", () => {
     expect(storage.uploadCredentialFile).not.toHaveBeenCalled();
   });
 
-  it("returns 400 for a file over 5 MB", async () => {
-    const big = new File([new Uint8Array(5 * 1024 * 1024 + 1)], "big.pdf", { type: "application/pdf" });
+  it("returns 400 for a file over 4 MB", async () => {
+    const big = new File([new Uint8Array(4 * 1024 * 1024 + 1)], "big.pdf", { type: "application/pdf" });
     expect((await upload(await login("maria"), form({ file: big, expiresAt: "2027-01-01" }))).status).toBe(400);
   });
 

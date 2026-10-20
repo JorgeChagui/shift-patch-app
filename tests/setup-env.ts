@@ -1,4 +1,4 @@
-import { testDatabaseUrl } from "../scripts/test-db-setup";
+import { testDatabaseUrl } from "../scripts/test-db";
 
 // Point the app's db client (src/lib/db.ts) at the test database before anything imports it.
 process.env.DATABASE_URL = testDatabaseUrl();

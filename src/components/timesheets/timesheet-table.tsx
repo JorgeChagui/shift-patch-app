@@ -44,7 +44,7 @@ export function TimesheetTable({ timesheets, showAgency }: { timesheets: Timeshe
             </TableRow>
           )}
           {timesheets.map((timesheet) => (
-            <TableRow key={timesheet.id}>
+            <TableRow key={timesheet.id} data-shift-id={timesheet.shiftId}>
               <TableCell>
                 <p className="font-bold">
                   {timesheet.shift.role}

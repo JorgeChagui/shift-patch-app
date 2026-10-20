@@ -9,6 +9,7 @@ export function ShiftRow({ shift, action, testId }: { shift: ShiftDto; action?: 
   return (
     <li
       data-testid={testId}
+      data-shift-id={shift.id}
       className="grid gap-3 rounded-lg border bg-surface p-4 sm:grid-cols-[minmax(0,1fr)_14rem_auto] sm:items-center sm:gap-6"
     >
       <ShiftSummary shift={shift} />

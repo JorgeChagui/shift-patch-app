@@ -121,7 +121,7 @@ file_size_limit = "50MiB"
 # Private bucket for nurse credential files (accessed server-side with signed URLs).
 [storage.buckets.credentials]
 public = false
-file_size_limit = "5MiB"
+file_size_limit = "4MiB"
 allowed_mime_types = ["application/pdf", "image/png", "image/jpeg"]
 
 # Allow connections via S3 compatible clients
