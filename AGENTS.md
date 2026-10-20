@@ -8,7 +8,7 @@ Nursing shift marketplace built for a technical assessment. Agencies post open s
 
 Work is split into 4 phases in `spec/tasks/` (the development spec, derived from `spec/`). `spec/tasks/README.md` holds the status board and the cross-phase decisions that fill gaps in the spec; read it first.
 
-- Current phase: **Phase 3 — Frontend & Test IDs** (`spec/tasks/phase-3-frontend.md`)
+- Current phase: **Phase 4 — Testing & CI/CD** (`spec/tasks/phase-4-testing-ci.md`)
 - Plan each phase from its task file. Tick tasks (`- [x]`) as they land, and update the status board and this "Current phase" line in the same commit.
 
 ## Stack and decisions
@@ -32,6 +32,7 @@ npm run type-check   # next typegen + tsc --noEmit
 npm run lint         # eslint .
 npm run test:api     # vitest run (tests/api)
 npm run test:e2e     # playwright test (tests/e2e)
+npm run check:testids # all 15 required data-testids present in src/
 
 npm run db:start     # start local Supabase (Docker); db:stop / db:status
 npm run db:migrate   # prisma migrate dev (create/apply migrations locally)
@@ -44,6 +45,8 @@ npm run db:deploy:prod / db:seed:prod   # against .env.production.local (confirm
 
 - `src/app` routes (route groups `(nurse)`, `(agency)`, `(admin)`), `src/app/api` route handlers
 - `src/lib` db client, auth, validation, shared helpers
+- `src/lib/services` mutations (business rules, return `ServiceResult`), `src/lib/data` cached reads (`'use cache'` + tags in `cache-tags.ts`). Route handlers and Server Actions (`src/actions`, via `defineAction`) both call these; never put rules in a handler or action.
+- `src/components` (`ui/` is shadcn), `src/hooks` client hooks
 - `prisma/` schema, migrations, seed (`seed-data.ts` holds the spec sample data); `supabase/config.toml` local stack; `scripts/` dev scripts
 - `tests/api`, `tests/e2e` (`tests/global-setup.ts` migrates + seeds the test DB)
 - `spec/` requirements, `spec/tasks/` phased development tasks, `.claude/skills/` project skills

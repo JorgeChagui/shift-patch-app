@@ -8,13 +8,13 @@ Use the `frontend-design` skill for visual direction and `next-best-practices` f
 
 ---
 
-- [ ] **P3-01 UI foundation**
+- [x] **P3-01 UI foundation**
   - **Goal:** shared shell for every role.
   - **Files:** `components.json`, `src/components/ui/*`, `src/app/layout.tsx`, `src/components/app-shell.tsx`, `src/app/page.tsx`
   - **Acceptance criteria:** shadcn/ui initialised for Tailwind v4; header with app name, current user and role, role-specific nav links, logout. `/` redirects to the role's home when logged in, else to `/login`. Responsive down to phone width.
   - **Verify:** manual check for each role; `npm run build`.
 
-- [ ] **P3-02 Login page**
+- [x] **P3-02 Login page**
   - **Goal:** login form that routes each role to its home.
   - **Files:** `src/app/login/page.tsx`, `src/app/login/login-form.tsx`
   - **Acceptance criteria:**
@@ -23,13 +23,13 @@ Use the `frontend-design` skill for visual direction and `next-best-practices` f
     - On 401: `notification-banner` shows "Invalid email or password".
   - **Verify:** manual login with all five seed accounts.
 
-- [ ] **P3-03 Notification banner**
+- [x] **P3-03 Notification banner**
   - **Goal:** one confirmation component for success and error.
   - **Files:** `src/components/notification-banner.tsx`
   - **Acceptance criteria:** `data-testid="notification-banner"` for both kinds; the text carries the message (e.g. "Shift claimed", "Credential expired, cannot claim shift"); styling differs by kind; `role="status"` / `role="alert"` for accessibility; dismissible.
   - **Verify:** used by P3-02, P3-04 to P3-06.
 
-- [ ] **P3-04 Nurse marketplace (`/shifts`)**
+- [x] **P3-04 Nurse marketplace (`/shifts`)**
   - **Goal:** browse and claim shifts, cancel own claims.
   - **Files:** `src/app/(nurse)/shifts/page.tsx`, `src/app/(nurse)/shifts/*`
   - **Acceptance criteria:**
@@ -39,13 +39,13 @@ Use the `frontend-design` skill for visual direction and `next-best-practices` f
     - Shows a warning with a link to `/credentials` when the nurse's license has expired.
   - **Verify:** Maria claims `shift-1`; James sees the expired banner.
 
-- [ ] **P3-05 Nurse credentials (`/credentials`)**
+- [x] **P3-05 Nurse credentials (`/credentials`)**
   - **Goal:** upload a credential with an expiry date.
   - **Files:** `src/app/(nurse)/credentials/page.tsx`, `src/app/(nurse)/credentials/*`
   - **Acceptance criteria:** `credential-upload-input` (file input), `credential-expiry-date-input`, a type select (`license` / `tb-test`), a submit button; banner on success or error; list of current credentials with valid/expired status and expiry.
   - **Verify:** James uploads a license expiring in the future, then claims a shift.
 
-- [ ] **P3-06 Agency shifts (`/agency/shifts`)**
+- [x] **P3-06 Agency shifts (`/agency/shifts`)**
   - **Goal:** post and manage the agency's shifts.
   - **Files:** `src/app/(agency)/agency/shifts/page.tsx`, `src/app/(agency)/agency/shifts/*`
   - **Acceptance criteria:**
@@ -54,7 +54,7 @@ Use the `frontend-design` skill for visual direction and `next-best-practices` f
     - Filled shifts have `shift-cancel-button` with a reason choice (no-show / advance). Open shifts can be withdrawn.
   - **Verify:** agency-a posts a shift and it shows in Maria's marketplace; agency-a cancels `shift-2` as no-show.
 
-- [ ] **P3-07 Admin dashboard (`/admin`)**
+- [x] **P3-07 Admin dashboard (`/admin`)**
   - **Goal:** live view of which shifts are open, filled or cancelled, and by whom.
   - **Files:** `src/app/(admin)/admin/page.tsx`, `src/app/(admin)/admin/*`
   - **Acceptance criteria:**
@@ -63,13 +63,13 @@ Use the `frontend-design` skill for visual direction and `next-best-practices` f
     - Subscribes to `/api/admin/stream` and refetches on `shifts-changed`; falls back to polling (e.g. every 10 s) if `EventSource` errors; shows a "live" / "polling" indicator.
   - **Verify:** dashboard open in one window, claim in another; the row updates without a reload.
 
-- [ ] **P3-08 Audit log and timesheets pages**
+- [x] **P3-08 Audit log and timesheets pages**
   - **Goal:** admin reporting views.
   - **Files:** `src/app/(admin)/admin/audit-log/page.tsx`, `src/app/(admin)/admin/timesheets/page.tsx`, optionally `src/app/(agency)/agency/timesheets/page.tsx`
   - **Acceptance criteria:** `audit-log-table` (time, actor, action, entity, details), newest first. `timesheet-table` (shift, nurse, date, hours, status, approve action). Agencies get the same table scoped to their shifts.
   - **Verify:** after a claim and a cancel, both appear in the audit log; the timesheet can be approved.
 
-- [ ] **P3-09 Test ID check**
+- [x] **P3-09 Test ID check**
   - **Goal:** confirm all 15 required test IDs exist exactly once per intended element.
   - **Files:** none (or a small script in `scripts/`)
   - **Acceptance criteria:** each ID from the spec table is found in `src/` on the element that performs the action: `login-email-input`, `login-password-input`, `login-submit-button`, `shift-list-item`, `shift-claim-button`, `shift-cancel-button`, `credential-upload-input`, `credential-expiry-date-input`, `agency-post-shift-button`, `agency-post-shift-submit-button`, `admin-dashboard-shift-table`, `admin-shift-status-badge`, `audit-log-table`, `timesheet-table`, `notification-banner`.
@@ -82,4 +82,16 @@ Use the `frontend-design` skill for visual direction and `next-best-practices` f
 
 ## Notes
 
-_Record decisions made during this phase here._
+- **Services + Server Actions.** Route-handler logic moved to `src/lib/services/*` (mutations, returning a `ServiceResult`) and `src/lib/data/*` (reads). Route handlers and Server Actions (`src/actions/*`, built with `defineAction` in `src/lib/actions.ts`) both call them, so rules live in one place. The API contracts are unchanged (the full `test:api` suite passes against the refactor).
+- **Caching.** Reads in `src/lib/data` use `'use cache'` + `cacheLife("marketplace")` (stale 30 s, revalidate 60 s, expire 1 h, in `next.config.ts`) + `cacheTag`. Arguments are IDs, never cookies, so entries are shared. Every mutation expires its tags (`MUTATION_TAGS` in `src/lib/cache-tags.ts`): `updateTag` in Server Actions, `revalidateTag(tag, { expire: 0 })` in route handlers. The admin credential list (signed URLs) and notifications stay uncached. Changes made straight to the DB (e.g. `db:seed` while the server runs) show up within the cache window.
+- **Rendering.** `/login` is static (○). Every role page is a static shell (header, headings, skeletons) with Suspense sections that read the session (◐). `/` is redirected in `proxy.ts`. Pages also call `requireSession(role)`, as defense in depth behind the proxy.
+- **Banner.** One `notification-banner`, inline at the top of the content, driven by `NotificationProvider` / `useNotify`. Every form uses `useActionFeedback`, so the banner shows the action's result; error text is the API's own (e.g. "Credential expired, cannot claim shift"). It clears on navigation.
+- **`shift-list-item`** is on the rows of the nurse's "Open shifts" list only. "My shifts" rows (the nurse's filled shifts) carry `shift-cancel-button` instead.
+- **Agency cancel.** A reason select (no-show / advance) next to `shift-cancel-button`, which submits. The nurse's cancel sends `reason: "advance"` as a hidden field.
+- **Expired-license warning** is a separate `role="note"` callout, not the banner, so tests reading the banner never see two messages.
+- **Agency timesheets** (`/agency/timesheets`) were added, sharing `TimesheetTable` with the admin page.
+- **Admin live view.** `useLiveShifts` = `useEventSource` (refetch on `ready` and `shifts-changed`; an error counts as a failure only once the stream is closed or 3 errors in a row, since the server closes every ~55 s) + `usePolling` (10 s) as the fallback. Verified by blocking `/api/admin/stream`.
+- **Design.** Light-only palette tokens in `globals.css` (soft medical blue brand, surgical mint secondary, cool neutrals, semantic status and alert colours). Atkinson Hyperlegible Next as the single typeface. `ShiftTimeStrip` (a 24 h bar; hatched past midnight) is the signature element.
+- **Test IDs.** `npm run check:testids` (`scripts/check-testids.ts`) confirms all 15. `tests/e2e/smoke.spec.ts` signs in as each role and asserts each page's IDs (read-only; mutating flows are Phase 4).
+- **Vitest.** `server-only` and `next/cache` are aliased to no-op stubs (`tests/stubs`), so the data layer runs uncached in API tests.
+- **Follow-up.** Stored `Notification` rows (P2-14) are not shown in the UI yet.
