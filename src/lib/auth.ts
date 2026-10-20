@@ -84,15 +84,27 @@ export async function requireRole(
   return session;
 }
 
+/** Cookie attributes for the session, shared by the API's Set-Cookie and Server Actions' cookies(). */
+export function sessionCookieOptions(maxAge = SESSION_TTL_SECONDS) {
+  return {
+    path: "/",
+    httpOnly: true,
+    sameSite: "lax",
+    maxAge,
+    secure: process.env.NODE_ENV === "production",
+  } as const;
+}
+
 export function sessionCookie(token: string, maxAge = SESSION_TTL_SECONDS): string {
+  const options = sessionCookieOptions(maxAge);
   const parts = [
     `${SESSION_COOKIE}=${token}`,
-    "Path=/",
+    `Path=${options.path}`,
     "HttpOnly",
     "SameSite=Lax",
-    `Max-Age=${maxAge}`,
+    `Max-Age=${options.maxAge}`,
   ];
-  if (process.env.NODE_ENV === "production") parts.push("Secure");
+  if (options.secure) parts.push("Secure");
   return parts.join("; ");
 }
 

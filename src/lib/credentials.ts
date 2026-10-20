@@ -1,16 +1,6 @@
 import type { DbClient } from "@/lib/db";
 
-export const CREDENTIAL_EXPIRED_MESSAGE = "Credential expired, cannot claim shift";
-
-/** Today's date as "YYYY-MM-DD". */
-export function today(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
-/** A credential is valid through its expiry date. */
-export function credentialStatus(expiresAt: string, on: string = today()): "valid" | "expired" {
-  return expiresAt >= on ? "valid" : "expired";
-}
+export { CREDENTIAL_EXPIRED_MESSAGE, credentialStatus, today } from "@/lib/credential-status";
 
 /**
  * Cross-phase decision 2: the nurse's latest license (newest upload, then later expiry)
