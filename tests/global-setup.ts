@@ -1,6 +1,6 @@
 import { PrismaPg } from "@prisma/adapter-pg";
 import { seed } from "../prisma/seed";
-import { setupTestDb, testDatabaseUrl } from "../scripts/test-db-setup";
+import { setupTestDb, testDatabaseUrl } from "../scripts/test-db";
 import { PrismaClient } from "../src/generated/prisma/client";
 
 // Runs once before the API suite: migrate and seed the dedicated local test database.

@@ -22,7 +22,9 @@
     "db:reset": "prisma migrate reset --force && prisma db seed",
     "db:test:setup": "tsx scripts/test-db-setup.ts",
     "db:deploy:prod": "dotenv run -q -f .env.production.local --override -- prisma migrate deploy",
-    "db:seed:prod": "dotenv run -q -f .env.production.local --override -- prisma db seed"
+    "db:seed:prod": "dotenv run -q -f .env.production.local --override -- prisma db seed",
+    "storage:setup": "tsx scripts/storage-setup.ts",
+    "storage:setup:prod": "dotenv run -q -f .env.production.local --override -- tsx scripts/storage-setup.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.10.1",

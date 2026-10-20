@@ -4,7 +4,8 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 // key bypasses storage policies. Tests mock this module.
 
 export const CREDENTIAL_BUCKET = "credentials";
-export const MAX_CREDENTIAL_BYTES = 5 * 1024 * 1024;
+// Vercel caps request bodies at 4.5 MB, so uploads (sent through a Server Action) stay under it.
+export const MAX_CREDENTIAL_BYTES = 4 * 1024 * 1024;
 export const ALLOWED_CREDENTIAL_TYPES = ["application/pdf", "image/jpeg", "image/png"];
 
 let client: SupabaseClient | undefined;

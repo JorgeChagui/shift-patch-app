@@ -15,7 +15,7 @@ export async function GET(request: Request) {
   return Response.json({ credentials });
 }
 
-/** Multipart upload: `file` (PDF/JPEG/PNG, max 5 MB), `expiresAt`, optional `type`. */
+/** Multipart upload: `file` (PDF/JPEG/PNG, max 4 MB), `expiresAt`, optional `type`. */
 export async function POST(request: Request) {
   const session = await requireRole(request, "nurse");
   if (session instanceof Response) return session;

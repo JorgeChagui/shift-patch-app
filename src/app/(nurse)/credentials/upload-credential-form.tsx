@@ -38,7 +38,7 @@ export function UploadCredentialForm() {
         />
       </Field>
       <div className="sm:col-span-2">
-        <Field id="credential-file" label="File" hint="PDF, JPEG or PNG, up to 5 MB.">
+        <Field id="credential-file" label="File" hint="PDF, JPEG or PNG, up to 4 MB.">
           <Input
             id="credential-file"
             name="file"

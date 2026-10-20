@@ -38,7 +38,7 @@ export async function AgencyShiftTable() {
         </TableHeader>
         <TableBody>
           {shifts.map((shift) => (
-            <TableRow key={shift.id}>
+            <TableRow key={shift.id} data-shift-id={shift.id}>
               <TableCell>
                 <p className="font-bold">{shift.role}</p>
                 <p className="text-ink-muted">

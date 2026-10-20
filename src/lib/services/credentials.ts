@@ -9,11 +9,11 @@ import { fail, ok, type ServiceResult } from "@/lib/result";
 import { ALLOWED_CREDENTIAL_TYPES, MAX_CREDENTIAL_BYTES, uploadCredentialFile } from "@/lib/storage";
 import type { CredentialUploadInput } from "@/lib/validation";
 
-/** Checks the uploaded file: present, PDF/JPEG/PNG, at most 5 MB. */
+/** Checks the uploaded file: present, PDF/JPEG/PNG, at most 4 MB. */
 function validateFile(file: FormDataEntryValue | null): ServiceResult<File> {
   if (!(file instanceof File) || file.size === 0) return fail(400, "file: is required");
   if (!ALLOWED_CREDENTIAL_TYPES.includes(file.type)) return fail(400, "file: must be a PDF, JPEG or PNG");
-  if (file.size > MAX_CREDENTIAL_BYTES) return fail(400, "file: must be 5 MB or smaller");
+  if (file.size > MAX_CREDENTIAL_BYTES) return fail(400, "file: must be 4 MB or smaller");
   return ok(file);
 }
 
